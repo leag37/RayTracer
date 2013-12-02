@@ -1,99 +1,13 @@
 #include <windows.h>
 #include <math.h>
 #include <gl/gl.h>
+#include "SceneRenderer.h"
+
+using namespace SuperTrace;
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
-
-
-struct rgbf {float r; float g; float b;};
-//WBL 9 May 2007 Based on
-//http://www.codeguru.com/cpp/w-d/dislog/commondialogs/article.php/c1861/
-//Common.h
-void toRGBf(const float h, const float s, const float v,
-	    rgbf* rgb)
-{
-  /*
-RGBType rgb;
-	if(!h  && !s)
-	{
-		rgb.r = rgb.g = rgb.b = v;
-	}
-  */
-  //rgbf* rgb = (rgbf*) out;
-double min,max,delta,hue;
-
-	max = v;
-	delta = max * s;
-	min = max - delta;
-
-	hue = h;
-	if(h > 300 || h <= 60)
-	{
-		rgb->r = max;
-		if(h > 300)
-		{
-			rgb->g = min;
-			hue = (hue - 360.0)/60.0;
-			rgb->b = ((hue * delta - min) * -1);
-		}
-		else
-		{
-			rgb->b = min;
-			hue = hue / 60.0;
-			rgb->g = (hue * delta + min);
-		}
-	}
-	else
-	if(h > 60 && h < 180)
-	{
-		rgb->g = max;
-		if(h < 120)
-		{
-			rgb->b = min;
-			hue = (hue/60.0 - 2.0 ) * delta;
-			rgb->r = min - hue;
-		}
-		else
-		{
-			rgb->r = min;
-			hue = (hue/60 - 2.0) * delta;
-			rgb->b = (min + hue);
-		}
-	}
-	else
-	{
-		rgb->b = max;
-		if(h < 240)
-		{
-			rgb->r = min;
-			hue = (hue/60.0 - 4.0 ) * delta;
-			rgb->g = (min - hue);
-		}
-		else
-		{
-			rgb->g = min;
-			hue = (hue/60 - 4.0) * delta;
-			rgb->r = (min + hue);
-		}
-	}
-}
-
-//Convert a wide range of data values into nice colours
-void colour(const float data, float* out) {
-  //convert data to angle
-  const float a = atan2(data,1)/(2*atan2(1,1)); // -1 .. +1
-  const float angle = (1+a)*180; //red=0 at -1,+1
-
-  const float saturation = 1;
-
-  const float h = (data<-1||data>1)? 1 : fabs(data);
-
-  toRGBf(angle,saturation,h,(rgbf*)out);
-}
-
-
 
 int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPrevInstance,
@@ -106,7 +20,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     HGLRC hRC;
     MSG msg;
     BOOL bQuit = FALSE;
-    float theta = 0.0f;
+    unsigned int width = 1024;
+    unsigned int height = 768;
 
     /* register window class */
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -119,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = "GLSample";
+    wcex.lpszClassName = "SuperTrace";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);;
 
 
@@ -128,13 +43,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     /* create main window */
     hwnd = CreateWindowEx(0,
-                          "GLSample",
-                          "OpenGL Sample",
+                          "SuperTrace",
+                          "SuperTrace Ray Tracer",
                           WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT,
                           CW_USEDEFAULT,
-                          1024,
-                          768,
+                          width,
+                          height,
                           NULL,
                           NULL,
                           hInstance,
@@ -170,24 +85,28 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
             if(hasRendered == false)
             {
+                // Create the scene renderer
+                SceneRenderer* sceneRenderer= new SceneRenderer();
+                sceneRenderer->setNumChunks(8);
+
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                float* pixels = new float[1024*768*3];
-                for(int i = 0; i < 768; ++i)
+                float* pixels = new float[width*height*3];
+                for(unsigned int i = 0; i < height; ++i)
                 {
-                    for(int j = 0; j < 1024; ++j)
+                    for(unsigned int j = 0; j < width; ++j)
                     {
-                        int pos = i * 1024 + j;
-                        pixels[pos * 3] = (float)(j) / 1024.0f;
-                        pixels[pos * 3 + 1] = (float) (i + j) / (1024.0f + 768.0f);
-                        pixels[pos * 3 + 2] = (float) (j) / 768.0f;
+                        int pos = i * width + j;
+                        pixels[pos * 3] = (float)(j) / float(width);
+                        pixels[pos * 3 + 1] = (float) (i + j) / float(width + height);
+                        pixels[pos * 3 + 2] = (float) (j) / float(height);
                     }
 
-                    float xpos = (0.0f) / 512.0f - 1.0f;
-                    float ypos = (float)(i) / 384.0f - 1.0f;
+                    float xpos = (0.0f) / float(width >> 1) - 1.0f;
+                    float ypos = (float)(i) / float(height >> 1) - 1.0f;
                     glRasterPos2f(xpos, ypos);
-                    glDrawPixels(1024, 1, GL_RGB, GL_FLOAT, &pixels[i*3]);
+                    glDrawPixels(width, 1, GL_RGB, GL_FLOAT, &pixels[i*3]);
                     glFlush();
                 }
                 hasRendered = true;
