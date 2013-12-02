@@ -7,6 +7,8 @@
 #ifndef __STSCENERENDERER_H__
 #define __STSCENERENDERER_H__
 
+#include <gl/gl.h>
+
 namespace SuperTrace
 {
     class SceneRenderer
@@ -46,6 +48,18 @@ namespace SuperTrace
         *   cHeight The chunk height
         */
         void getChunkDimensions(unsigned int tWidth, unsigned int tHeight, unsigned int &cWidth, unsigned int &cHeight);
+
+        /** Render a chunk
+        * @param
+        *   cWidth The width of the chunk
+        * @param
+        *   cHeight The height of the chunk
+        * @param
+        *   startX The starting x index
+        * @param
+        *   startY The starting y index
+        */
+        void renderChunk(unsigned int cWidth, unsigned int cHeight, unsigned int startX, unsigned int startY);
 
     private:
         /** The number of chunks/jobs we want to split the render job into

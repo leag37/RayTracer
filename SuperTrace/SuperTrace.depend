@@ -14,8 +14,15 @@
 
 1385941134 c:\users\gael\documents\raytracer\supertrace\include\vector3.h
 
-1385954024 source:c:\users\gael\documents\raytracer\supertrace\src\scenerenderer.cpp
+1385955246 source:c:\users\gael\documents\raytracer\supertrace\src\scenerenderer.cpp
 	"SceneRenderer.h"
 
-1385953715 c:\users\gael\documents\raytracer\supertrace\include\scenerenderer.h
+1385954680 c:\users\gael\documents\raytracer\supertrace\include\scenerenderer.h
+	<gl/gl.h>
+
+1385954568 source:c:\users\gael\documents\raytracer\supertrace\src\main.cpp
+	<windows.h>
+	<math.h>
+	<gl/gl.h>
+	"SceneRenderer.h"
 

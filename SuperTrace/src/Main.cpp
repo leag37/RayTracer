@@ -92,23 +92,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                float* pixels = new float[width*height*3];
-                for(unsigned int i = 0; i < height; ++i)
-                {
-                    for(unsigned int j = 0; j < width; ++j)
-                    {
-                        int pos = i * width + j;
-                        pixels[pos * 3] = (float)(j) / float(width);
-                        pixels[pos * 3 + 1] = (float) (i + j) / float(width + height);
-                        pixels[pos * 3 + 2] = (float) (j) / float(height);
-                    }
+                sceneRenderer->render(width, height);
 
-                    float xpos = (0.0f) / float(width >> 1) - 1.0f;
-                    float ypos = (float)(i) / float(height >> 1) - 1.0f;
-                    glRasterPos2f(xpos, ypos);
-                    glDrawPixels(width, 1, GL_RGB, GL_FLOAT, &pixels[i*3]);
-                    glFlush();
-                }
                 hasRendered = true;
             }
         }

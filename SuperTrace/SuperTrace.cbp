@@ -38,8 +38,10 @@
 			<Add library="glu32" />
 			<Add library="gdi32" />
 		</Linker>
+		<Unit filename="include/SceneRenderer.h" />
 		<Unit filename="include/Vector3.h" />
 		<Unit filename="src/Main.cpp" />
+		<Unit filename="src/SceneRenderer.cpp" />
 		<Unit filename="src/Vector3.cpp" />
 		<Extensions>
 			<code_completion />
