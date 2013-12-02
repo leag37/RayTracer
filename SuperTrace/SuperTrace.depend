@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1385952534 source:c:\users\gael\documents\graphics\supertrace\src\main.cpp
+	<windows.h>
+	<math.h>
+	<gl/gl.h>
+
+1385941362 source:c:\users\gael\documents\graphics\supertrace\src\vector3.cpp
+	"Vector3.h"
+
+1385941134 c:\users\gael\documents\graphics\supertrace\include\vector3.h
+
