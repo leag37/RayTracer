@@ -28,6 +28,14 @@ namespace SuperTrace
         */
         void setNumChunks(unsigned int numChunks);
 
+        /** Calculate the optimal number of chunks for the given dimensions
+        * @param
+        *   width The window width
+        * @param
+        *   height The window height
+        */
+        void calcOptimalChunks(unsigned int width, unsigned int height);
+
         /** Render the scene
         * @param
         *   width The viewport width
@@ -35,19 +43,6 @@ namespace SuperTrace
         *   height The viewport height
         */
         void render(unsigned int width, unsigned int height);
-
-    private:
-        /** Calculate the chunk dimensions
-        * @param
-        *   tWidth The total width
-        * @param
-        *   tHeight The total height
-        * @param
-        *   cWidth The chunk width
-        * @param
-        *   cHeight The chunk height
-        */
-        void getChunkDimensions(unsigned int tWidth, unsigned int tHeight, unsigned int &cWidth, unsigned int &cHeight);
 
         /** Render a chunk
         * @param
@@ -59,14 +54,33 @@ namespace SuperTrace
         * @param
         *   startY The starting y index
         */
-        void renderChunk(unsigned int cWidth, unsigned int cHeight, unsigned int startX, unsigned int startY);
+        void renderChunk(unsigned int startX, unsigned int startY);
+
+    private:
+        /** Calculate the chunk dimensions
+        * @param
+        *   tWidth The total width
+        * @param
+        *   tHeight The total height
+        */
+        void getChunkDimensions(unsigned int tWidth, unsigned int tHeight);
 
     private:
         /** The number of chunks/jobs we want to split the render job into
         */
         unsigned int _numChunks;
 
+        /** The number of threads we will launch
+        */
+        unsigned int _numWorkers;
 
+        /** The chunk width
+        */
+        unsigned int _cWidth;
+
+        /** The chunk height
+        */
+        unsigned int _cHeight;
     };
 
 }   // Namespace

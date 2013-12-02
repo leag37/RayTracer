@@ -25,7 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     /* register window class */
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_OWNDC;
+    wcex.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = WindowProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
@@ -87,7 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             {
                 // Create the scene renderer
                 SceneRenderer* sceneRenderer= new SceneRenderer();
-                sceneRenderer->setNumChunks(8);
+                sceneRenderer->calcOptimalChunks(width, height);
 
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
