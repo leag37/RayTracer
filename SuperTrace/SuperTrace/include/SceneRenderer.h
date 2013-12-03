@@ -7,10 +7,12 @@
 #ifndef __STSCENERENDERER_H__
 #define __STSCENERENDERER_H__
 
-#include <gl/gl.h>
+#include <windows.h>
 
 namespace SuperTrace
 {
+    class ChunkData;
+
     class SceneRenderer
     {
     public:
@@ -46,15 +48,15 @@ namespace SuperTrace
 
         /** Render a chunk
         * @param
-        *   cWidth The width of the chunk
-        * @param
-        *   cHeight The height of the chunk
-        * @param
         *   startX The starting x index
         * @param
         *   startY The starting y index
         */
         void renderChunk(unsigned int startX, unsigned int startY);
+
+        /** Set context
+        */
+        void setContext(HDC hDC, HGLRC hRC);
 
     private:
         /** Calculate the chunk dimensions
@@ -73,6 +75,23 @@ namespace SuperTrace
         /** The number of threads we will launch
         */
         unsigned int _numWorkers;
+
+        /** Worker threads
+        */
+        HANDLE* _workers;
+
+        /** Mutex
+        */
+        HANDLE _mutex;
+
+        /** Array of chunk data
+        */
+        ChunkData* _chunks;
+
+        /** Render context values
+        */
+        HDC _hDC;
+		HGLRC _hRC;
 
         /** The chunk width
         */

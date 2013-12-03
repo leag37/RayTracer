@@ -6,9 +6,12 @@
 #include "SceneRenderer.h"
 #include "ChunkData.h"
 #include <Windows.h>
+#include <gl/GL.h>
 
 namespace SuperTrace
 {
+    DWORD WINAPI RenderWorker(LPVOID lpParam);
+
     /** Default constructor
     */
     SceneRenderer::SceneRenderer()
@@ -106,12 +109,32 @@ namespace SuperTrace
         // First, calculate the chunk dimensions
         getChunkDimensions(width, height);
 
+        // Create the mutex
+        _mutex = CreateMutex(NULL, FALSE, NULL);
+
+        // Initialize the number of threads
+        _numWorkers = _numChunks * _numChunks;
+        _workers = new HANDLE[_numWorkers];
+        _chunks = new ChunkData[_numWorkers];
+        DWORD threadId;
+
+		// Unset the rendering context before doing any work
+		wglMakeCurrent(NULL, NULL);
+
         // Second, iterate over each section and render
         for(unsigned int i = 0; i < _numChunks; ++i)
         {
             for(unsigned int j = 0; j < _numChunks; ++j)
             {
-                renderChunk(i, j);
+                _chunks[i*_numChunks + j] = ChunkData(this, i, j);
+                _workers[i*_numChunks + j] = CreateThread(
+                                                          NULL,
+                                                          0,
+                                                          (LPTHREAD_START_ROUTINE) RenderWorker,
+                                                          (LPVOID) &_chunks[i*_numChunks + j],
+                                                          0,
+                                                          &threadId);
+                //renderChunk(i, j);
             }
         }
     }
@@ -153,14 +176,53 @@ namespace SuperTrace
         }
         float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
         float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
-        glRasterPos2f(xpos, ypos);
-        glDrawPixels(_cWidth, _cHeight, GL_RGB, GL_FLOAT, pixels);
-        glFlush();
+
+        // Get handle on mutex
+		bool tryHandle = true;
+		while(tryHandle == true)
+		{
+			HRESULT result = WaitForSingleObject(_mutex, 1000);
+
+			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
+			{
+				Sleep(100);
+			}
+			else
+			{
+				// Create a context for this thread
+				BOOL success = wglMakeCurrent(_hDC, _hRC);
+
+				glRasterPos2f(xpos, ypos);
+				glDrawPixels(_cWidth, _cHeight, GL_RGB, GL_FLOAT, pixels);
+				glFlush();
+				//glFinish();
+				
+				// Delete the rendering context
+				wglMakeCurrent(NULL, NULL);
+
+				// Release mutex
+				ReleaseMutex(_mutex);
+
+				// We are finished with this thread
+				tryHandle = false;
+			}
+		}
+
+        // Release the array of pixels
+        delete[] pixels;
+    }
+
+    void SceneRenderer::setContext(HDC hDC, HGLRC hRC)
+    {
+        _hDC = hDC;
+		_hRC = hRC;
     }
 
     DWORD WINAPI RenderWorker(LPVOID lpParam)
     {
         ChunkData* data = static_cast<ChunkData*>(lpParam);
+
+        data->_sceneRenderer->renderChunk(data->_startX, data->_startY);
 
         return 0;
     }

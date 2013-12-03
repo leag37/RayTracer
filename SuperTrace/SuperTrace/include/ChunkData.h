@@ -18,9 +18,9 @@ namespace SuperTrace
         */
         ChunkData(SceneRenderer* sceneRenderer, unsigned int startX, unsigned int startY);
 
-
-        unsigned int startX;
-        unsigned int startY;
+        SceneRenderer* _sceneRenderer;
+        unsigned int _startX;
+        unsigned int _startY;
     };
 
 }

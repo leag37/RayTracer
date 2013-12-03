@@ -14,3 +14,16 @@
 
 # Compiled executable
 *SuperTrace.exe
+*.cache
+*.idb
+*.ilk
+*.ipch
+*.lastbuildstate
+*.log
+*.manifest
+*.obj
+*.opensdf
+*.pdb
+*.sdf
+*.suo
+*.tlog

@@ -1,6 +1,6 @@
 #include <windows.h>
+#include <gl/GL.h>
 #include <math.h>
-#include <gl/gl.h>
 #include "SceneRenderer.h"
 
 using namespace SuperTrace;
@@ -87,10 +87,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
             {
                 // Create the scene renderer
                 SceneRenderer* sceneRenderer= new SceneRenderer();
-                sceneRenderer->calcOptimalChunks(width, height);
+                //sceneRenderer->calcOptimalChunks(width, height);
+                sceneRenderer->setNumChunks(64);
 
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
+
+                // Set the scene context values
+                sceneRenderer->setContext(hDC, hRC);
 
                 sceneRenderer->render(width, height);
 
