@@ -5,8 +5,6 @@
 
 namespace SuperTrace
 {
-    class SceneRenderer;
-
     class ChunkData
     {
     public:
@@ -16,9 +14,8 @@ namespace SuperTrace
 
         /** Constructor
         */
-        ChunkData(SceneRenderer* sceneRenderer, unsigned int startX, unsigned int startY);
+        ChunkData(unsigned int startX, unsigned int startY);
 
-        SceneRenderer* _sceneRenderer;
         unsigned int _startX;
         unsigned int _startY;
     };

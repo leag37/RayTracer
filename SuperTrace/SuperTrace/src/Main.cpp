@@ -87,8 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             {
                 // Create the scene renderer
                 SceneRenderer* sceneRenderer= new SceneRenderer();
-                //sceneRenderer->calcOptimalChunks(width, height);
-                sceneRenderer->setNumChunks(64);
+                sceneRenderer->calcOptimalChunks(width, height);
 
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT);

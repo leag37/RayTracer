@@ -8,6 +8,7 @@
 #define __STSCENERENDERER_H__
 
 #include <windows.h>
+#include <queue>
 
 namespace SuperTrace
 {
@@ -58,6 +59,16 @@ namespace SuperTrace
         */
         void setContext(HDC hDC, HGLRC hRC);
 
+		/** Get isSceneComplete
+		*/
+		bool getIsSceneComplete();
+
+		// Enqueue a chunk
+		void enqueue(ChunkData* chunk);
+
+		// Dequeue a chunk
+		ChunkData* dequeue();
+
     private:
         /** Calculate the chunk dimensions
         * @param
@@ -66,6 +77,9 @@ namespace SuperTrace
         *   tHeight The total height
         */
         void getChunkDimensions(unsigned int tWidth, unsigned int tHeight);
+
+		// Decrement the number of jobs left to handle
+		void decrementJobCount();
 
     private:
         /** The number of chunks/jobs we want to split the render job into
@@ -82,11 +96,19 @@ namespace SuperTrace
 
         /** Mutex
         */
-        HANDLE _mutex;
+        HANDLE _renderMutex;
+
+		/** Job mutex
+		*/
+		HANDLE _jobMutex;
+
+		/** Number of jobs to handle total
+		*/
+		unsigned int _numJobs;
 
         /** Array of chunk data
         */
-        ChunkData* _chunks;
+        std::queue<ChunkData*> _queue;
 
         /** Render context values
         */

@@ -110,31 +110,36 @@ namespace SuperTrace
         getChunkDimensions(width, height);
 
         // Create the mutex
-        _mutex = CreateMutex(NULL, FALSE, NULL);
+        _renderMutex = CreateMutex(NULL, FALSE, NULL);
+		_jobMutex = CreateMutex(NULL, FALSE, NULL);
 
         // Initialize the number of threads
-        _numWorkers = _numChunks * _numChunks;
+        _numWorkers = 100;
         _workers = new HANDLE[_numWorkers];
-        _chunks = new ChunkData[_numWorkers];
+		_numJobs = _numChunks * _numChunks;
         DWORD threadId;
 
 		// Unset the rendering context before doing any work
 		wglMakeCurrent(NULL, NULL);
+
+		// Start the workers
+		for(unsigned int i = 0; i < _numWorkers; ++i)
+		{
+			_workers[i] = CreateThread(	NULL,
+                                        0,
+                                        (LPTHREAD_START_ROUTINE) RenderWorker,
+                                        (LPVOID) this,
+                                        0,
+                                        &threadId);
+		}
 
         // Second, iterate over each section and render
         for(unsigned int i = 0; i < _numChunks; ++i)
         {
             for(unsigned int j = 0; j < _numChunks; ++j)
             {
-                _chunks[i*_numChunks + j] = ChunkData(this, i, j);
-                _workers[i*_numChunks + j] = CreateThread(
-                                                          NULL,
-                                                          0,
-                                                          (LPTHREAD_START_ROUTINE) RenderWorker,
-                                                          (LPVOID) &_chunks[i*_numChunks + j],
-                                                          0,
-                                                          &threadId);
-                //renderChunk(i, j);
+				// Ask enqueue object
+				enqueue(new ChunkData(i, j));
             }
         }
     }
@@ -181,27 +186,29 @@ namespace SuperTrace
 		bool tryHandle = true;
 		while(tryHandle == true)
 		{
-			HRESULT result = WaitForSingleObject(_mutex, 1000);
+			HRESULT result = WaitForSingleObject(_renderMutex, 1000);
 
 			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
 			{
-				Sleep(100);
+				Sleep(10);
 			}
 			else
 			{
+				// Tally the number of jobs we have left to handle
+				decrementJobCount();
+
 				// Create a context for this thread
 				BOOL success = wglMakeCurrent(_hDC, _hRC);
 
 				glRasterPos2f(xpos, ypos);
 				glDrawPixels(_cWidth, _cHeight, GL_RGB, GL_FLOAT, pixels);
 				glFlush();
-				//glFinish();
 				
 				// Delete the rendering context
 				wglMakeCurrent(NULL, NULL);
 
 				// Release mutex
-				ReleaseMutex(_mutex);
+				ReleaseMutex(_renderMutex);
 
 				// We are finished with this thread
 				tryHandle = false;
@@ -212,17 +219,115 @@ namespace SuperTrace
         delete[] pixels;
     }
 
+	// Enqueue a chunk
+	void SceneRenderer::enqueue(ChunkData* chunk)
+	{
+		// First, acquire the job mutex
+		bool tryEnqueue = true;
+		while(tryEnqueue == true)
+		{
+			HRESULT result = WaitForSingleObject(_jobMutex, 1000);
+			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
+			{
+				Sleep(100);
+			}
+			else
+			{
+				// Enqueue and release
+				_queue.push(chunk);
+
+				// Release the mutex
+				ReleaseMutex(_jobMutex);
+
+				// Exit loop
+				tryEnqueue = false;
+			}
+		}
+	}
+
+	// Dequeue a chunk
+	ChunkData* SceneRenderer::dequeue()
+	{
+		// The data to return
+		ChunkData* data = 0;
+
+		// First, acquire the job mutex
+		bool tryDequeue = true;
+		while(tryDequeue == true)
+		{
+			// First, test for valid queue entry
+			if(_queue.size() == 0)
+			{
+				tryDequeue = false;
+			}
+			else
+			{
+				// There is a valid queue entry at lock attempt time
+				HRESULT result = WaitForSingleObject(_jobMutex, 1000);
+				if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
+				{
+					Sleep(10);
+				}
+				else
+				{
+					// Now that we have acquired the lock, make sure we still have a valid queue entry
+
+					if(_queue.size() > 0)
+					{
+						data = _queue.front();
+						_queue.pop();
+						tryDequeue = false;
+					}
+
+					// Release the mutex
+					ReleaseMutex(_jobMutex);
+				}
+			}
+		}
+
+		return data;
+	}
+
+
     void SceneRenderer::setContext(HDC hDC, HGLRC hRC)
     {
         _hDC = hDC;
 		_hRC = hRC;
     }
 
+	// Decrement the number of jobs left to handle
+	void SceneRenderer::decrementJobCount()
+	{
+		--_numJobs;
+	}
+
+	/** Get isSceneComplete
+	*/
+	bool SceneRenderer::getIsSceneComplete()
+	{
+		return _numJobs == 0;
+	}
+
     DWORD WINAPI RenderWorker(LPVOID lpParam)
     {
-        ChunkData* data = static_cast<ChunkData*>(lpParam);
+		// Get context
+		SceneRenderer* sceneRenderer = static_cast<SceneRenderer*>(lpParam);
+		
+		// While the scene is not complete
+		while(sceneRenderer->getIsSceneComplete() == false)
+		{
+			// Get a chunk from the queue
+			ChunkData* data = sceneRenderer->dequeue();
 
-        data->_sceneRenderer->renderChunk(data->_startX, data->_startY);
+			// If the chunk is valid, render otherwise skip
+			if(data != 0)
+			{
+				sceneRenderer->renderChunk(data->_startX, data->_startY);
+
+				// Delete the data
+				delete data;
+			}
+		}
 
         return 0;
     }
