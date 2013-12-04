@@ -12,6 +12,10 @@
 
 namespace SuperTrace
 {
+	/** \addtogroup Scene
+	*	@{
+	*/
+
     class ChunkData;
 
     class SceneRenderer
@@ -123,6 +127,8 @@ namespace SuperTrace
         */
         unsigned int _cHeight;
     };
+
+	/** @} */
 
 }   // Namespace
 

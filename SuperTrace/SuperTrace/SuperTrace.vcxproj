@@ -13,11 +13,13 @@
   <ItemGroup>
     <ClCompile Include="src\ChunkData.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Matrix44.cpp" />
     <ClCompile Include="src\SceneRenderer.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ChunkData.h" />
+    <ClInclude Include="include\Matrix44.h" />
     <ClInclude Include="include\SceneRenderer.h" />
     <ClInclude Include="include\Vector3.h" />
   </ItemGroup>
