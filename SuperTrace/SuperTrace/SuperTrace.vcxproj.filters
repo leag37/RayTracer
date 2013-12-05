@@ -30,6 +30,9 @@
     <ClCompile Include="src\Matrix44.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\STMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ChunkData.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Matrix44.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\STMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,7 @@
 //*************************************************************************************************
 #include "Matrix44.h"
 #include <algorithm>
+#include <assert.h>
 
 namespace SuperTrace
 {
@@ -124,6 +125,336 @@ namespace SuperTrace
 			}
 		}
 		return *this;
+	}
+
+	/** Access operator
+	* @param
+	*	row	The row index
+	* @param
+	*	column The column index
+	* @return
+	*	float The corresponding value
+	*/
+	float Matrix44::operator()(int row, int column) const
+	{
+		assert(row > -1 && row < 4 && column > -1 && column < 4);
+		return _m[row][column];
+	}
+
+	/** Access operator
+	* @param
+	*	row	The row index
+	* @param
+	*	column The column index
+	* @return
+	*	float The corresponding value
+	*/
+	float Matrix44::operator()(unsigned int row, unsigned int column) const
+	{
+		assert(row < 4 && column < 4);
+		return _m[row][column];
+	}
+
+	/** Set this matrix to identity
+	*/
+	void Matrix44::setIdentity()
+	{
+		_m00 = 1.0f; _m01 = 0.0f; _m02 = 0.0f; _m03 = 0.0f;
+		_m10 = 0.0f; _m11 = 1.0f; _m12 = 0.0f; _m13 = 0.0f;
+		_m20 = 0.0f; _m21 = 0.0f; _m22 = 1.0f; _m23 = 0.0f;
+		_m30 = 0.0f; _m31 = 0.0f; _m32 = 0.0f; _m33 = 1.0f;
+	}
+
+	/** Transpose this matrix
+	*/
+	void Matrix44::transpose()
+	{
+		// Temp storage value
+		float t;
+		for(unsigned int i = 0; i < 4; ++i)
+		{
+			for(unsigned int j = i; j < 4; ++j)
+			{
+				// Swap values
+				t = _m[i][j];
+				_m[i][j] = _m[j][i];
+				_m[j][i] = t;
+			}
+		}
+	}
+
+	/** Return a transposed copy of this matrix
+	* @return
+	*	Matrix44 The transposed copy
+	*/
+	Matrix44 Matrix44::getTranspose() const
+	{
+		Matrix44 m;
+		for(unsigned int i = 0; i < 4; ++i)
+		{
+			for(unsigned int j = 0; j < 4; ++j)
+			{
+				m._m[i][j] = _m[j][i];
+			}
+		}
+		return m;
+	}
+
+	/** Invert this matrix
+	*/
+	void Matrix44::inverse()
+	{
+		// Prepare our augmented matrix
+		Matrix44 aug;
+		aug.setIdentity();
+
+		// Our first operation is to make sure the pivot for each for is not 0
+		for(unsigned int col = 0; col < 4; ++col)
+		{
+			// If the pivot is 0, swap
+			if(_m[col][col] == 0.0f)
+			{
+				// We must find another row (in this we select the row with the absolute highest value
+				unsigned int index = col;
+				for(unsigned int row = 0; row < 4; ++row)
+				{
+					// Select if the value is bigger
+					if(fabs(_m[row][col]) > fabs(_m[index][col]))
+					{
+						index = row;
+					}
+				}
+
+				// If the index is not the column, swap the rows
+				if(index != col)
+				{
+					for(unsigned int i = 0; i < 4; ++i)
+					{
+						float t = _m[col][col];
+						_m[col][col] = _m[index][col];
+						_m[index][col] = t;
+
+						t = aug._m[col][col];
+						aug._m[col][col] = aug._m[index][col];
+						aug._m[index][col] = t;
+					}
+				}
+			}
+
+			// Now that we have a non-zero pivot, we must reduce each row in this column to zero
+			for(unsigned int row = 0; row < 4; ++row)
+			{
+				// Don't reduce our row...
+				if(row != col)
+				{
+					// The coefficient by which to reduce is row|column / col|col
+					float coefficient = _m[row][col] / _m[col][col];
+					if(coefficient != 0.0f)
+					{
+						// Reduce the row
+						for(unsigned int i = 0; i < 4; ++i)
+						{
+							_m[row][i] -= coefficient * _m[col][i];
+							aug._m[row][i] -= coefficient * aug._m[col][i];
+						}
+
+						// Set the current element to 0 to avoid rounding errors
+						_m[row][col] = 0.0f;
+					}
+				}
+			}
+		}
+
+		// Now, scale each element by it's own coefficient
+		for(unsigned int row = 0; row < 4; ++row)
+		{
+			for(unsigned int col = 0; col < 4; ++col)
+			{
+				aug._m[row][col] /= _m[row][row];
+			}
+		}
+
+		// Now our augmented matrix should be equal to the matrix we want to return, so set it to ourselves
+		*this = aug;
+	}
+
+	/** Return the inverse of this matrix
+	* @return
+	*	Matrix44 The inverse of the matrix
+	*/
+	Matrix44 Matrix44::getInverse() const
+	{
+		// Prepare our augmented matrix
+		Matrix44 aug;
+		aug.setIdentity();
+
+		// Keep a copy of our current matrix to avoid changing it
+		Matrix44 m = *this;
+
+		// Our first operation is to make sure the pivot for each for is not 0
+		for(unsigned int col = 0; col < 4; ++col)
+		{
+			// If the pivot is 0, swap
+			if(m._m[col][col] == 0.0f)
+			{
+				// We must find another row (in this we select the row with the absolute highest value
+				unsigned int index = col;
+				for(unsigned int row = 0; row < 4; ++row)
+				{
+					// Select if the value is bigger
+					if(fabs(m._m[row][col]) > fabs(m._m[index][col]))
+					{
+						index = row;
+					}
+				}
+
+				// If the index is not the column, swap the rows
+				if(index != col)
+				{
+					for(unsigned int i = 0; i < 4; ++i)
+					{
+						float t = m._m[col][col];
+						m._m[col][col] = m._m[index][col];
+						m._m[index][col] = t;
+
+						t = aug._m[col][col];
+						aug._m[col][col] = aug._m[index][col];
+						aug._m[index][col] = t;
+					}
+				}
+			}
+
+			// Now that we have a non-zero pivot, we must reduce each row in this column to zero
+			for(unsigned int row = 0; row < 4; ++row)
+			{
+				// Don't reduce our row...
+				if(row != col)
+				{
+					// The coefficient by which to reduce is row|column / col|col
+					float coefficient = m._m[row][col] / m._m[col][col];
+					if(coefficient != 0.0f)
+					{
+						// Reduce the row
+						for(unsigned int i = 0; i < 4; ++i)
+						{
+							m._m[row][i] -= coefficient * m._m[col][i];
+							aug._m[row][i] -= coefficient * aug._m[col][i];
+						}
+
+						// Set the current element to 0 to avoid rounding errors
+						m._m[row][col] = 0.0f;
+					}
+				}
+			}
+		}
+
+		// Now, scale each element by it's own coefficient
+		for(unsigned int row = 0; row < 4; ++row)
+		{
+			for(unsigned int col = 0; col < 4; ++col)
+			{
+				aug._m[row][col] /= m._m[row][row];
+			}
+		}
+
+		// Now our augmented matrix should be equal to the matrix we want to return, so set it to ourselves
+		return aug;
+	}
+
+	/** Return an identity matrix
+	* @return
+	*	Matrix44 An identity matrix
+	*/
+	Matrix44 Matrix44Identity()
+	{
+		return Matrix44(1.0f, 0.0f, 0.0f, 0.0f,
+						0.0f, 1.0f, 0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	/** Return a translation matrix
+	* @param
+	*	tx The x translation
+	* @param
+	*	ty The y translation
+	* @param
+	*	tz The z translation
+	* @return
+	*	Matrix44 A translation matrix
+	*/
+	Matrix44 Matrix44Translation(float tx, float ty, float tz)
+	{
+		return Matrix44(1.0f, 0.0f, 0.0f, 0.0f,
+						0.0f, 1.0f, 0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						tx, ty, tz, 1.0f);
+	}
+
+	/** Return a scaling matrix 
+	* @param
+	*	sx The x scale factor
+	* @param
+	*	sy The y scale factor
+	* @param 
+	*	sz The z scale factor
+	* @return
+	*	Matrix44 A scaling matrix
+	*/
+	Matrix44 Matrix44Scale(float sx, float sy, float sz)
+	{
+		return Matrix44(sx, 0.0f, 0.0f, 0.0f,
+						0.0f, sy, 0.0f, 0.0f,
+						0.0f, 0.0f, sz, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	/** Return a x-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationX(float rot)
+	{
+		float cos = cosf(rot);
+		float sin = sinf(rot);
+		return Matrix44(1.0f, 0.0f, 0.0f, 0.0f,
+						0.0f, cos, sin, 0.0f,
+						0.0f, -sin, cos, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	/** Return a y-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationY(float rot)
+	{
+		float cos = cosf(rot);
+		float sin = sinf(rot);
+		return Matrix44(cos, 0.0f, -sin, 0.0f,
+						0.0f, 1.0f, 0.0f, 0.0f,
+						sin, 0.0f, cos, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	/** Return a z-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationZ(float rot)
+	{
+		float cos = cosf(rot);
+		float sin = sinf(rot);
+		return Matrix44(cos, sin, 0.0f, 0.0f,
+						-sin, cos, 0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 }	// Namespace

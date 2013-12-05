@@ -68,6 +68,50 @@ namespace SuperTrace
 		*/
 		Matrix44& operator*=(const Matrix44& m);
 
+		/** Access operator
+		* @param
+		*	row	The row index
+		* @param
+		*	column The column index
+		* @return
+		*	float The corresponding value
+		*/
+		float operator()(int row, int column) const;
+
+		/** Access operator
+		* @param
+		*	row	The row index
+		* @param
+		*	column The column index
+		* @return
+		*	float The corresponding value
+		*/
+		float operator()(unsigned int row, unsigned int column) const;
+
+		/** Set this matrix to identity
+		*/
+		void setIdentity();
+
+		/** Transpose this matrix
+		*/
+		void transpose();
+
+		/** Return a transposed copy of this matrix
+		* @return
+		*	Matrix44 The transposed copy
+		*/
+		Matrix44 getTranspose() const;
+
+		/** Invert this matrix
+		*/
+		void inverse();
+
+		/** Return the inverse of this matrix
+		* @return
+		*	Matrix44 The inverse of the matrix
+		*/
+		Matrix44 getInverse() const;
+
 	private:
 		/** The union between the different matrix representations
 		*/
@@ -89,6 +133,60 @@ namespace SuperTrace
 			float _f[16];
 		};
 	};
+
+	/** Return an identity matrix
+	* @return
+	*	Matrix44 An identity matrix
+	*/
+	Matrix44 Matrix44Identity();
+
+	/** Return a translation matrix
+	* @param
+	*	tx The x translation
+	* @param
+	*	ty The y translation
+	* @param
+	*	tz The z translation
+	* @return
+	*	Matrix44 A translation matrix
+	*/
+	Matrix44 Matrix44Translation(float tx, float ty, float tz);
+
+	/** Return a scaling matrix 
+	* @param
+	*	sx The x scale factor
+	* @param
+	*	sy The y scale factor
+	* @param 
+	*	sz The z scale factor
+	* @return
+	*	Matrix44 A scaling matrix
+	*/
+	Matrix44 Matrix44Scale(float sx, float sy, float sz);
+
+	/** Return a x-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationX(float rot);
+
+	/** Return a y-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationY(float rot);
+
+	/** Return a z-axis rotation matrix
+	* @param
+	*	rot The rotation in radians
+	* @return
+	*	Matrix44 The rotation matrix
+	*/
+	Matrix44 Matrix44RotationZ(float rot);
 
 	/** @} */
 
