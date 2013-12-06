@@ -9,24 +9,24 @@
 
 namespace SuperTrace
 {
-    /** Default constructor
-    */
-    Vector3::Vector3()
+	/** Default constructor
+	*/
+	Vector3::Vector3()
 		:	_x(0.0f),
 			_y(0.0f), 
 			_z(0.0f)
-    { }
+	{ }
 
 
 	/** Constructor
-    * @param
-    *   x The x coordinate
-    * @param
-    *   y The y coordinate
-    * @param
-    *   z The z coordinate
-    */
-    Vector3::Vector3(float x, float y, float z)
+	* @param
+	*   x The x coordinate
+	* @param
+	*   y The y coordinate
+	* @param
+	*   z The z coordinate
+	*/
+	Vector3::Vector3(float x, float y, float z)
 		:	_x(x),
 			_y(y),
 			_z(z)
@@ -80,24 +80,24 @@ namespace SuperTrace
 		return _x != v._x || _y != v._y || _z != v._z;
 	}
 
-    /** Addition operator
-    * @param
-    *   vec The vector to add
-    * @return
-    *   Vector3 The sum of two vectors
-    */
-    Vector3 Vector3::operator+(const Vector3& v) const
+	/** Addition operator
+	* @param
+	*   vec The vector to add
+	* @return
+	*   Vector3 The sum of two vectors
+	*/
+	Vector3 Vector3::operator+(const Vector3& v) const
 	{
 		return Vector3(_x + v._x, _y + v._y, _z + v._z);
 	}
 
 	/** Addition operator
-    * @param
-    *   vec The vector to add
-    * @return
-    *   Vector3& The sum of two vectors
-    */
-    Vector3& Vector3::operator+=(const Vector3& v)
+	* @param
+	*   vec The vector to add
+	* @return
+	*   Vector3& The sum of two vectors
+	*/
+	Vector3& Vector3::operator+=(const Vector3& v)
 	{
 		_x += v._x;
 		_y += v._y;
@@ -170,6 +170,44 @@ namespace SuperTrace
 		return *this;
 	}
 
+	/** Scale operator
+	* @param
+	*	scale The value by which to scale
+	* @return
+	*	Vector3 The scaled vector
+	*/
+	Vector3 Vector3::operator/(const Vector3& scale) const
+	{
+		return Vector3(_x / scale._x, _y / scale._y, _z / scale._z);
+	}
+
+	/** Scale operator
+	* @param
+	*	scale The value by which to scale
+	* @return
+	*	Vector3& The scaled vector
+	*/
+	Vector3& Vector3::operator/=(const Vector3& scale)
+	{
+		_x /= scale._x;
+		_y /= scale._y;
+		_z /= scale._z;
+		return *this;
+	}
+
+	/** Scale operator
+	* @param
+	*	base The base value (identical across vector)
+	* @param
+	*	scale The value by which to scale
+	* @return
+	*	Vector3 The scaled vector
+	*/
+	Vector3 operator/(float base, const Vector3& scale)
+	{
+		return Vector3(base / scale._x, base / scale._y, base / scale._z);
+	}
+
 	/** Dot product
 	* @param
 	*	v The vector with which to take the dot product
@@ -229,7 +267,7 @@ namespace SuperTrace
 		return v;
 	}
 	
-    /** Get the x value
+	/** Get the x value
 	* @return
 	*	float The x value of the vector
 	*/
@@ -242,7 +280,7 @@ namespace SuperTrace
 	* @return
 	*	float The y value of the vector
 	*/
-    float Vector3::getY() const
+	float Vector3::getY() const
 	{
 		return _y;
 	}
@@ -251,7 +289,7 @@ namespace SuperTrace
 	* @return
 	*	float The z value of the vector
 	*/
-    float Vector3::getZ() const
+	float Vector3::getZ() const
 	{
 		return _z;
 	}
@@ -262,7 +300,7 @@ namespace SuperTrace
 	* @return
 	*	float The value corresponding to the specified index
 	*/
-    float Vector3::operator[](unsigned int i) const
+	float Vector3::operator[](unsigned int i) const
 	{
 		assert(i < 3);
 		return _f[i];
@@ -274,7 +312,7 @@ namespace SuperTrace
 	* @return
 	*	float The value corresponding to the specified index
 	*/
-    float Vector3::operator[](int i) const
+	float Vector3::operator[](int i) const
 	{
 		assert(i < 3 && i > -1);
 		return _f[i];

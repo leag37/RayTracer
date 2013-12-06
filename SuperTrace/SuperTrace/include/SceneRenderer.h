@@ -16,52 +16,52 @@ namespace SuperTrace
 	*	@{
 	*/
 
-    class ChunkData;
+	class ChunkData;
 
-    class SceneRenderer
-    {
-    public:
-        /** Default constructor
-        */
-        SceneRenderer();
+	class SceneRenderer
+	{
+	public:
+		/** Default constructor
+		*/
+		SceneRenderer();
 
-        /** Destructor
-        */
-        ~SceneRenderer();
+		/** Destructor
+		*/
+		~SceneRenderer();
 
-        /** Set the number of chunks
-        * @param
-        *   numChunks The number of chunks
-        */
-        void setNumChunks(unsigned int numChunks);
+		/** Set the number of chunks
+		* @param
+		*   numChunks The number of chunks
+		*/
+		void setNumChunks(unsigned int numChunks);
 
-        /** Calculate the optimal number of chunks for the given dimensions
-        * @param
-        *   width The window width
-        * @param
-        *   height The window height
-        */
-        void calcOptimalChunks(unsigned int width, unsigned int height);
+		/** Calculate the optimal number of chunks for the given dimensions
+		* @param
+		*   width The window width
+		* @param
+		*   height The window height
+		*/
+		void calcOptimalChunks(unsigned int width, unsigned int height);
 
-        /** Render the scene
-        * @param
-        *   width The viewport width
-        * @param
-        *   height The viewport height
-        */
-        void render(unsigned int width, unsigned int height);
+		/** Render the scene
+		* @param
+		*   width The viewport width
+		* @param
+		*   height The viewport height
+		*/
+		void render(unsigned int width, unsigned int height);
 
-        /** Render a chunk
-        * @param
-        *   startX The starting x index
-        * @param
-        *   startY The starting y index
-        */
-        void renderChunk(unsigned int startX, unsigned int startY);
+		/** Render a chunk
+		* @param
+		*   startX The starting x index
+		* @param
+		*   startY The starting y index
+		*/
+		void renderChunk(unsigned int startX, unsigned int startY);
 
-        /** Set context
-        */
-        void setContext(HDC hDC, HGLRC hRC);
+		/** Set context
+		*/
+		void setContext(HDC hDC, HGLRC hRC);
 
 		/** Get isSceneComplete
 		*/
@@ -73,34 +73,34 @@ namespace SuperTrace
 		// Dequeue a chunk
 		ChunkData* dequeue();
 
-    private:
-        /** Calculate the chunk dimensions
-        * @param
-        *   tWidth The total width
-        * @param
-        *   tHeight The total height
-        */
-        void getChunkDimensions(unsigned int tWidth, unsigned int tHeight);
+	private:
+		/** Calculate the chunk dimensions
+		* @param
+		*   tWidth The total width
+		* @param
+		*   tHeight The total height
+		*/
+		void getChunkDimensions(unsigned int tWidth, unsigned int tHeight);
 
 		// Decrement the number of jobs left to handle
 		void decrementJobCount();
 
-    private:
-        /** The number of chunks/jobs we want to split the render job into
-        */
-        unsigned int _numChunks;
+	private:
+		/** The number of chunks/jobs we want to split the render job into
+		*/
+		unsigned int _numChunks;
 
-        /** The number of threads we will launch
-        */
-        unsigned int _numWorkers;
+		/** The number of threads we will launch
+		*/
+		unsigned int _numWorkers;
 
-        /** Worker threads
-        */
-        HANDLE* _workers;
+		/** Worker threads
+		*/
+		HANDLE* _workers;
 
-        /** Mutex
-        */
-        HANDLE _renderMutex;
+		/** Mutex
+		*/
+		HANDLE _renderMutex;
 
 		/** Job mutex
 		*/
@@ -110,23 +110,23 @@ namespace SuperTrace
 		*/
 		unsigned int _numJobs;
 
-        /** Array of chunk data
-        */
-        std::queue<ChunkData*> _queue;
+		/** Array of chunk data
+		*/
+		std::queue<ChunkData*> _queue;
 
-        /** Render context values
-        */
-        HDC _hDC;
+		/** Render context values
+		*/
+		HDC _hDC;
 		HGLRC _hRC;
 
-        /** The chunk width
-        */
-        unsigned int _cWidth;
+		/** The chunk width
+		*/
+		unsigned int _cWidth;
 
-        /** The chunk height
-        */
-        unsigned int _cHeight;
-    };
+		/** The chunk height
+		*/
+		unsigned int _cHeight;
+	};
 
 	/** @} */
 

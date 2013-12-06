@@ -113,6 +113,32 @@ namespace SuperTrace
 		*/
 		Vector3& operator/=(float scale);
 
+		/** Scale operator
+		* @param
+		*	scale The value by which to scale
+		* @return
+		*	Vector3 The scaled vector
+		*/
+		Vector3 operator/(const Vector3& scale) const;
+
+		/** Scale operator
+		* @param
+		*	scale The value by which to scale
+		* @return
+		*	Vector3& The scaled vector
+		*/
+		Vector3& operator/=(const Vector3& scale);
+
+		/** Scale operator
+		* @param
+		*	base The base value (identical across vector)
+		* @param
+		*	scale The value by which to scale
+		* @return
+		*	Vector3 The scaled vector
+		*/
+		friend Vector3 operator/(float base, const Vector3& scale);
+
 		/** Dot product
 		* @param
 		*	v The vector with which to take the dot product
