@@ -5,119 +5,125 @@
 //*************************************************************************************************
 #include "SceneRenderer.h"
 #include "ChunkData.h"
+#include "Camera.h"
+#include "STMath.h"
 #include <Windows.h>
 #include <gl/GL.h>
 
 namespace SuperTrace
 {
-    DWORD WINAPI RenderWorker(LPVOID lpParam);
+	DWORD WINAPI RenderWorker(LPVOID lpParam);
 
-    /** Default constructor
-    */
-    SceneRenderer::SceneRenderer()
-    :   _numChunks(0)
-    { }
+	/** Default constructor
+	*/
+	SceneRenderer::SceneRenderer()
+	:   _numChunks(0)
+	{ }
 
-    /** Destructor
-    */
-    SceneRenderer::~SceneRenderer()
-    { }
+	/** Destructor
+	*/
+	SceneRenderer::~SceneRenderer()
+	{ }
 
-    /** Set the number of chunks
-    * @param
-    *   numChunks The number of chunks
-    */
-    void SceneRenderer::setNumChunks(unsigned int numChunks)
-    {
-        _numChunks = numChunks;
-    }
+	/** Set the number of chunks
+	* @param
+	*   numChunks The number of chunks
+	*/
+	void SceneRenderer::setNumChunks(unsigned int numChunks)
+	{
+		_numChunks = numChunks;
+	}
 
-    /** Calculate the optimal number of chunks for the given dimensions
-    * @param
-    *   width The window width
-    * @param
-    *   height The window height
-    */
-    void SceneRenderer::calcOptimalChunks(unsigned int width, unsigned int height)
-    {
-        // Find the greatest common divisor
-        // First use the binary method to simplify calculations
-        unsigned int d = 1;
-        bool canDivide = true;
-        while(canDivide == true)
-        {
-            bool dW = (width % 2 == 0);
-            bool dH = (height % 2 == 0);
-            if(dW == true && dH == true)
-            {
-                width >>= 1;
-                height >>= 1;
-                d <<= 1;
-            }
-            else if(dW == true)
-            {
-                width >>= 1;
-            }
-            else if(dH == true)
-            {
-                height >>= 1;
-            }
-            else
-            {
-                canDivide = false;
-            }
-        }
+	/** Calculate the optimal number of chunks for the given dimensions
+	* @param
+	*   width The window width
+	* @param
+	*   height The window height
+	*/
+	void SceneRenderer::calcOptimalChunks(unsigned int width, unsigned int height)
+	{
+		// Find the greatest common divisor
+		// First use the binary method to simplify calculations
+		unsigned int d = 1;
+		bool canDivide = true;
+		while(canDivide == true)
+		{
+			bool dW = (width % 2 == 0);
+			bool dH = (height % 2 == 0);
+			if(dW == true && dH == true)
+			{
+				width >>= 1;
+				height >>= 1;
+				d <<= 1;
+			}
+			else if(dW == true)
+			{
+				width >>= 1;
+			}
+			else if(dH == true)
+			{
+				height >>= 1;
+			}
+			else
+			{
+				canDivide = false;
+			}
+		}
 
-        // We have pared down our values using binary method, so now we can find the GCD of this number
-        canDivide = true;
+		// We have pared down our values using binary method, so now we can find the GCD of this number
+		canDivide = true;
 
-        // Ensure width is the largest value
-        if(height > width)
-        {
-            unsigned int t = width;
-            width = height;
-            height = t;
-        }
-        while(canDivide == true)
-        {
-            // Divide w by h
-            unsigned int quotient = width / height;
-            unsigned int remainder = width - (height * quotient);
+		// Ensure width is the largest value
+		if(height > width)
+		{
+			unsigned int t = width;
+			width = height;
+			height = t;
+		}
+		while(canDivide == true)
+		{
+			// Divide w by h
+			unsigned int quotient = width / height;
+			unsigned int remainder = width - (height * quotient);
 
-            // Set height to width and remainder to height (then repeat)
-            width = height;
-            height = remainder;
+			// Set height to width and remainder to height (then repeat)
+			width = height;
+			height = remainder;
 
-            if(remainder == 0)
-            {
-                canDivide = false;
-            }
-        }
+			if(remainder == 0)
+			{
+				canDivide = false;
+			}
+		}
 
-        // GCD is current width * d
-        _numChunks = width * d;
-    }
+		// GCD is current width * d
+		_numChunks = width * d;
+	}
 
-    /** Render the scene
-    * @param
-    *   width The viewport width
-    * @param
-    *   height The viewport height
-    */
-    void SceneRenderer::render(unsigned int width, unsigned int height)
-    {
-        // First, calculate the chunk dimensions
-        getChunkDimensions(width, height);
+	/** Render the scene
+	* @param
+	*   width The viewport width
+	* @param
+	*   height The viewport height
+	*/
+	void SceneRenderer::render(unsigned int width, unsigned int height)
+	{
+		// Setup the camera
+		float fov = tan(60.0f * 0.5f * M_PI / 180.0f);
+		_camera = Camera(width, height, fov);
 
-        // Create the mutex
-        _renderMutex = CreateMutex(NULL, FALSE, NULL);
+		// First, calculate the chunk dimensions
+		getChunkDimensions(width, height);
+
+		// Create the mutex
+		_renderMutex = CreateMutex(NULL, FALSE, NULL);
 		_jobMutex = CreateMutex(NULL, FALSE, NULL);
 
-        // Initialize the number of threads
-        _numWorkers = 100;
-        _workers = new HANDLE[_numWorkers];
+		// Initialize the number of threads
+		_numWorkers = 100;
+		_workers = new HANDLE[_numWorkers];
 		_numJobs = _numChunks * _numChunks;
-        DWORD threadId;
+		DWORD threadId;
 
 		// Unset the rendering context before doing any work
 		wglMakeCurrent(NULL, NULL);
@@ -126,63 +132,73 @@ namespace SuperTrace
 		for(unsigned int i = 0; i < _numWorkers; ++i)
 		{
 			_workers[i] = CreateThread(	NULL,
-                                        0,
-                                        (LPTHREAD_START_ROUTINE) RenderWorker,
-                                        (LPVOID) this,
-                                        0,
-                                        &threadId);
+										0,
+										(LPTHREAD_START_ROUTINE) RenderWorker,
+										(LPVOID) this,
+										0,
+										&threadId);
 		}
 
-        // Second, iterate over each section and render
-        for(unsigned int i = 0; i < _numChunks; ++i)
-        {
-            for(unsigned int j = 0; j < _numChunks; ++j)
-            {
+		// Second, iterate over each section and render
+		for(unsigned int i = 0; i < _numChunks; ++i)
+		{
+			for(unsigned int j = 0; j < _numChunks; ++j)
+			{
 				// Ask enqueue object
 				enqueue(new ChunkData(i, j));
-            }
-        }
-    }
+			}
+		}
+	}
 
-    /** Calculate the chunk dimensions
-    * @param
-    *   tWidth The total width
-    * @param
-    *   tHeight The total height
-    */
-    void SceneRenderer::getChunkDimensions(unsigned int tWidth, unsigned int tHeight)
-    {
-        // Naively divide tWidth by numChunks
-        _cWidth = tWidth / _numChunks;
-        _cHeight = tHeight / _numChunks;
-    }
+	/** Calculate the chunk dimensions
+	* @param
+	*   tWidth The total width
+	* @param
+	*   tHeight The total height
+	*/
+	void SceneRenderer::getChunkDimensions(unsigned int tWidth, unsigned int tHeight)
+	{
+		// Naively divide tWidth by numChunks
+		_cWidth = tWidth / _numChunks;
+		_cHeight = tHeight / _numChunks;
+	}
 
-    /** Render a chunk
-    * @param
-    *   startX The starting x index
-    * @param
-    *   startY The starting y index
-    */
-    void SceneRenderer::renderChunk(unsigned int startX, unsigned int startY)
-    {
-        float* pixels = new float[_cWidth*_cHeight*3];
-        for(unsigned int i = 0; i < _cHeight; ++i)
-        {
-            for(unsigned int j = 0; j < _cWidth; ++j)
-            {
-                int pos = i * _cWidth + j;
-                int ni = i + (_cHeight * startY);
-                int nj = j + (_cWidth * startX);
+	/** Render a chunk
+	* @param
+	*   startX The starting x index
+	* @param
+	*   startY The starting y index
+	*/
+	void SceneRenderer::renderChunk(unsigned int startX, unsigned int startY)
+	{
+		float* pixels = new float[_cWidth*_cHeight*3];
+		for(unsigned int i = 0; i < _cHeight; ++i)
+		{
+			for(unsigned int j = 0; j < _cWidth; ++j)
+			{
+				int pos = (i * _cWidth + j) * 3;
+/*				int ni = i + (_cHeight * startY);
+				int nj = j + (_cWidth * startX);
 
-                pixels[pos * 3] = (float)(nj) / float(_cWidth * _numChunks);
-                pixels[pos * 3 + 1] = (float) (ni + nj) / float((_cWidth + _cHeight) * _numChunks);
-                pixels[pos * 3 + 2] = (float) (nj) / float(_cHeight * _numChunks);
-            }
-        }
-        float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
-        float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
+				pixels[pos * 3] = (float)(nj) / float(_cWidth * _numChunks);
+				pixels[pos * 3 + 1] = (float) (ni + nj) / float((_cWidth + _cHeight) * _numChunks);
+				pixels[pos * 3 + 2] = (float) (nj) / float(_cHeight * _numChunks);
+				*/
+				// Get the raster position
+				unsigned int x = _cWidth * startX + j;
+				unsigned int y = _cHeight * startY + i;
 
-        // Get handle on mutex
+				// Get the direction ray
+				Ray ray = _camera.rasterToRay(x, y);
+				pixels[pos] = (1.0f + ray.getDirection().getX()) * 0.5f;
+				pixels[pos + 1] = (1.0f + ray.getDirection().getY()) * 0.5f;
+				pixels[pos + 2] = 0.0f;
+			}
+		}
+		float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
+		float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
+
+		// Get handle on mutex
 		bool tryHandle = true;
 		while(tryHandle == true)
 		{
@@ -215,9 +231,9 @@ namespace SuperTrace
 			}
 		}
 
-        // Release the array of pixels
-        delete[] pixels;
-    }
+		// Release the array of pixels
+		delete[] pixels;
+	}
 
 	// Enqueue a chunk
 	void SceneRenderer::enqueue(ChunkData* chunk)
@@ -289,11 +305,11 @@ namespace SuperTrace
 	}
 
 
-    void SceneRenderer::setContext(HDC hDC, HGLRC hRC)
-    {
-        _hDC = hDC;
+	void SceneRenderer::setContext(HDC hDC, HGLRC hRC)
+	{
+		_hDC = hDC;
 		_hRC = hRC;
-    }
+	}
 
 	// Decrement the number of jobs left to handle
 	void SceneRenderer::decrementJobCount()
@@ -308,8 +324,8 @@ namespace SuperTrace
 		return _numJobs == 0;
 	}
 
-    DWORD WINAPI RenderWorker(LPVOID lpParam)
-    {
+	DWORD WINAPI RenderWorker(LPVOID lpParam)
+	{
 		// Get context
 		SceneRenderer* sceneRenderer = static_cast<SceneRenderer*>(lpParam);
 		
@@ -329,7 +345,7 @@ namespace SuperTrace
 			}
 		}
 
-        return 0;
-    }
+		return 0;
+	}
 
 }   // Namespace

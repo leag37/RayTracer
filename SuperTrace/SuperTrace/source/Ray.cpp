@@ -10,11 +10,8 @@ namespace SuperTrace
 {
 	/** Contructor
 	*/
-	Ray::Ray(	const Vector3& origin, 
-				const Vector3& direction, 
-				RayType type = RAY_TYPE_UNKNOWN, 
-				float tMin = 0.0f, 
-				float tMax = std::numeric_limits<float>::max())
+	Ray::Ray(const Vector3& origin, const Vector3& direction, RayType type, 
+			float tMin, float tMax)
 		:	_origin(origin),
 			_direction(direction),
 			_type(type),
@@ -37,6 +34,24 @@ namespace SuperTrace
 	Vector3 Ray::operator() (float t) const
 	{
 		return _origin + (_direction * t);
+	}
+
+	/** Get the origin of the ray
+	* @return
+	*	Vector3 Origin of the ray
+	*/
+	const Vector3& Ray::getOrigin() const
+	{
+		return _origin;
+	}
+
+	/** Get the direction of the ray
+	* @return
+	*	Vector3 The direction of the ray
+	*/
+	const Vector3& Ray::getDirection() const
+	{
+		return _direction;
 	}
 
 }	// Namespace

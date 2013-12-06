@@ -11,6 +11,9 @@
 
 namespace SuperTrace
 {
+
+#define M_PI 3.14159265359f
+
 	/** Transform a vector by a matrix
 	* @param
 	*	vec The vector3 to transform

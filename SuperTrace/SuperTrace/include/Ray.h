@@ -7,6 +7,7 @@
 #define __STRAY_H__
 
 #include "Vector3.h"
+#include <limits>
 
 namespace SuperTrace
 {
@@ -27,7 +28,11 @@ namespace SuperTrace
 	public:
 		/** Contructor
 		*/
-		Ray(const Vector3& origin, const Vector3& direction, RayType type, float tMin, float tMax);
+		Ray(const Vector3& origin,
+			const Vector3& direction,
+			RayType type = RAY_TYPE_UNKNOWN, 
+			float tMin = 0.0f, 
+			float tMax = FLT_MAX);
 
 		/** Parametric operator
 		* @param
@@ -37,6 +42,17 @@ namespace SuperTrace
 		*/
 		Vector3 operator() (float t) const;
 
+		/** Get the origin of the ray
+		* @return
+		*	Vector3 Origin of the ray
+		*/
+		const Vector3& getOrigin() const;
+
+		/** Get the direction of the ray
+		* @return
+		*	Vector3 The direction of the ray
+		*/
+		const Vector3& getDirection() const;
 
 	private:
 		/** Origin point

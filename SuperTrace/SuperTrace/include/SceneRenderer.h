@@ -9,6 +9,7 @@
 
 #include <windows.h>
 #include <queue>
+#include "Camera.h"
 
 namespace SuperTrace
 {
@@ -126,6 +127,10 @@ namespace SuperTrace
 		/** The chunk height
 		*/
 		unsigned int _cHeight;
+
+		/** Camera
+		*/
+		Camera _camera;
 	};
 
 	/** @} */
