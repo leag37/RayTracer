@@ -10,6 +10,10 @@
 #include <Windows.h>
 #include <gl/GL.h>
 
+// TEMP
+#include "Sphere.h"
+// END TEMP
+
 namespace SuperTrace
 {
 	DWORD WINAPI RenderWorker(LPVOID lpParam);
@@ -176,7 +180,7 @@ namespace SuperTrace
 		{
 			for(unsigned int j = 0; j < _cWidth; ++j)
 			{
-				int pos = (i * _cWidth + j) * 3;
+				int pos = ((i * _cWidth) + j) * 3;
 /*				int ni = i + (_cHeight * startY);
 				int nj = j + (_cWidth * startX);
 
@@ -188,15 +192,50 @@ namespace SuperTrace
 				unsigned int x = _cWidth * startX + j;
 				unsigned int y = _cHeight * startY + i;
 
+/*				pixels[pos] = float(startX) / float(_numChunks);
+				pixels[pos + 1] = float(startY) / float(_numChunks);
+				pixels[pos + 2] = float(startX + startY) / float(_numChunks + _numChunks);
+				*/
 				// Get the direction ray
 				Ray ray = _camera.rasterToRay(x, y);
-				pixels[pos] = (1.0f + ray.getDirection().getX()) * 0.5f;
+/*				pixels[pos] = (1.0f + ray.getDirection().getX()) * 0.5f;
 				pixels[pos + 1] = (1.0f + ray.getDirection().getY()) * 0.5f;
 				pixels[pos + 2] = 0.0f;
+				*/
+				// Create a sphere at (0, 0, -5)
+				Sphere s = Sphere(Vector3(0.0f, 0.0f, -5.0f), 1.25f);
+				Sphere s2 = Sphere(Vector3(2.0f, 0.0f, -6.0f), 0.75f);
+				if(s.testIntersect(ray) == true)
+				{
+					pixels[pos] = 1.0f;
+					pixels[pos + 1] = 0.0f;
+					pixels[pos + 2] = 0.0f;
+				}
+				else if(s2.testIntersect(ray) == true)
+				{
+					pixels[pos] = 0.0f;
+					pixels[pos + 1] = 0.0f;
+					pixels[pos + 2] = 1.0f;
+				}
+				else
+				{
+					pixels[pos] = 0.0f;
+					pixels[pos + 1] = 1.0f;
+					pixels[pos + 2] = 0.0f;
+				}
 			}
 		}
-		float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
-		float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
+
+		// Construct x and y position
+		float initX = static_cast<float>(_cWidth * startX);
+		float totalX = static_cast<float>(_cWidth * _numChunks) * 0.5f;
+		float xpos = (initX / totalX) - 1.0f;
+
+		float initY = static_cast<float>(_cHeight * startY);
+		float totalY = static_cast<float>(_cHeight * _numChunks) * 0.5f;
+		float ypos = (initY / totalY) - 1.0f;
+//		float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
+//		float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
 
 		// Get handle on mutex
 		bool tryHandle = true;
@@ -218,7 +257,7 @@ namespace SuperTrace
 
 				glRasterPos2f(xpos, ypos);
 				glDrawPixels(_cWidth, _cHeight, GL_RGB, GL_FLOAT, pixels);
-				glFlush();
+				glFinish();
 				
 				// Delete the rendering context
 				wglMakeCurrent(NULL, NULL);

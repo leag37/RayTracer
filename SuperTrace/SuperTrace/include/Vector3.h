@@ -8,26 +8,26 @@
 
 namespace SuperTrace
 {
-    /** \addtogroup Math
-    *   @{
-    */
+	/** \addtogroup Math
+	*   @{
+	*/
 
-    class Vector3
-    {
-    public:
-        /** Default constructor
-        */
-        Vector3();
+	class Vector3
+	{
+	public:
+		/** Default constructor
+		*/
+		Vector3();
 
-        /** Constructor
-        * @param
-        *   x The x coordinate
-        * @param
-        *   y The y coordinate
-        * @param
-        *   z The z coordinate
-        */
-        Vector3(float x, float y, float z);
+		/** Constructor
+		* @param
+		*   x The x coordinate
+		* @param
+		*   y The y coordinate
+		* @param
+		*   z The z coordinate
+		*/
+		Vector3(float x, float y, float z);
 
 		/** Constructor
 		* @param
@@ -55,21 +55,37 @@ namespace SuperTrace
 		*/
 		bool operator!=(const Vector3& v) const;
 
-        /** Addition operator
-        * @param
-        *   vec The vector to add
-        * @return
-        *   Vector3 The sum of two vectors
-        */
-        Vector3 operator+(const Vector3& v) const;
+		/** Addition operator
+		* @param
+		*   vec The vector to add
+		* @return
+		*   Vector3 The sum of two vectors
+		*/
+		Vector3 operator+(const Vector3& v) const;
 
 		/** Addition operator
-        * @param
-        *   vec The vector to add
-        * @return
-        *   Vector3& The sum of two vectors
-        */
-        Vector3& operator+=(const Vector3& v);
+		* @param
+		*   vec The vector to add
+		* @return
+		*   Vector3& The sum of two vectors
+		*/
+		Vector3& operator+=(const Vector3& v);
+
+		/** Subtraction operator
+		* @param
+		*   vec The vector to subtract
+		* @return
+		*   Vector3 The difference of two vectors
+		*/
+		Vector3 operator-(const Vector3& v) const;
+
+		/** Subtraction operator
+		* @param
+		*   vec The vector to subtract
+		* @return
+		*   Vector3& The difference of two vectors
+		*/
+		Vector3& operator-=(const Vector3& v);
 
 		/** Scale operator
 		* @param
@@ -177,7 +193,7 @@ namespace SuperTrace
 		*/
 		Vector3 normal() const;
 
-        /** Get the x value
+		/** Get the x value
 		* @return
 		*	float The x value of the vector
 		*/
@@ -187,13 +203,13 @@ namespace SuperTrace
 		* @return
 		*	float The y value of the vector
 		*/
-        float getY() const;
+		float getY() const;
 
 		/** Get the z value
 		* @return
 		*	float The z value of the vector
 		*/
-        float getZ() const;
+		float getZ() const;
 
 		/** Get a value from the vector by index
 		* @param
@@ -201,7 +217,7 @@ namespace SuperTrace
 		* @return
 		*	float The value corresponding to the specified index
 		*/
-        float operator[](unsigned int i) const;
+		float operator[](unsigned int i) const;
 
 		/** Get a value from the vector by index
 		* @param
@@ -209,23 +225,23 @@ namespace SuperTrace
 		* @return
 		*	float The value corresponding to the specified index
 		*/
-        float operator[](int i) const;
+		float operator[](int i) const;
 
-    private:
-        // The definition of the data
-        union
-        {
-            struct
-            {
-                float _x;
-                float _y;
-                float _z;
-            };
-            float _f[3];
-        };
-    };
+	private:
+		// The definition of the data
+		union
+		{
+			struct
+			{
+				float _x;
+				float _y;
+				float _z;
+			};
+			float _f[3];
+		};
+	};
 
-    /** @} */
+	/** @} */
 
 }   // Namespace
 

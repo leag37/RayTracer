@@ -20,9 +20,9 @@ namespace SuperTrace
 	{ 
 		// Calculate inverse direction and sign
 		_invDirection = 1.0f / _direction;
-		sign[0] = _invDirection[0] < 0;
-		sign[1] = _invDirection[1] < 0;
-		sign[2] = _invDirection[2] < 0;
+		_sign[0] = _invDirection[0] < 0;
+		_sign[1] = _invDirection[1] < 0;
+		_sign[2] = _invDirection[2] < 0;
 	}
 
 	/** Parametric operator
@@ -52,6 +52,69 @@ namespace SuperTrace
 	const Vector3& Ray::getDirection() const
 	{
 		return _direction;
+	}
+
+	/** Return the type
+	* @return 
+	*	RayType The ray type
+	*/
+	RayType Ray::getType() const
+	{
+		return _type;
+	}
+
+	/** Return the current tMin value
+	* @return
+	*	float tMin
+	*/
+	float Ray::getTMin() const
+	{
+		return _tMin;
+	}
+
+	/** Set tMin
+	* @param 
+	*	tMin The new tMin value
+	*/
+	void Ray::setTMin(float tMin) const
+	{
+		_tMin = tMin;
+	}
+
+	/** Return the current tMax value
+	* @return
+	*	float tMax
+	*/
+	float Ray::getTMax() const
+	{
+		return _tMax;
+	}
+
+	/** Set tMax
+	* @param 
+	*	tMax The new tMax value
+	*/
+	void Ray::setTMax(float tMax) const
+	{
+		_tMax = tMax;
+	}
+
+	/** Get the inverse direction
+	* @return
+	*	Vector3 The inverse direction
+	*/
+	const Vector3& Ray::getInvDirection() const
+	{
+		return _invDirection;
+	}
+
+	/** Get the array of signs
+	* @return
+	*	const int* The pointer to the signs
+	*/
+	const int* Ray::getSign() const
+	{
+		return _sign;
 	}
 
 }	// Namespace

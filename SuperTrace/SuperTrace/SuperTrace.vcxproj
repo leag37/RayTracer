@@ -12,20 +12,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Ray.cpp" />
+    <ClCompile Include="src\Box3.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\ChunkData.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Matrix44.cpp" />
     <ClCompile Include="src\SceneRenderer.cpp" />
+    <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\STMath.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Box3.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ChunkData.h" />
     <ClInclude Include="include\Matrix44.h" />
     <ClInclude Include="include\Ray.h" />
     <ClInclude Include="include\SceneRenderer.h" />
+    <ClInclude Include="include\Sphere.h" />
     <ClInclude Include="include\STMath.h" />
     <ClInclude Include="include\Vector3.h" />
   </ItemGroup>

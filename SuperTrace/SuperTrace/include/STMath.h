@@ -34,6 +34,16 @@ namespace SuperTrace
 	*/
 	Vector3 Vector3Transform(const Vector3& vec, const Matrix44& mat);
 
+	/** Solve a quadratic equation
+	* @param
+	*	a, b, c Values from quadratic equation
+	* @param
+	*	x0, x1 The resultant roots (if any)
+	* @return
+	*	bool If at least one root is found
+	*/
+	bool SolveQuadratic(float a, float b, float c, float& x0, float& x1);
+	
 }	// Namespace
 
 #endif // __STMATH_H__

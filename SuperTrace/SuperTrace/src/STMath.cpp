@@ -4,6 +4,8 @@
 // Description: General include for math classes and cross-type functions.
 //*************************************************************************************************
 #include "STMath.h"
+#include <math.h>
+#include <algorithm>
 
 namespace SuperTrace
 {
@@ -53,6 +55,50 @@ namespace SuperTrace
 
 		// Return the corresponding vector
 		return Vector3(x, y, z);
+	}
+
+	/** Solve a quadratic equation
+	* @param
+	*	a, b, c Values from quadratic equation
+	* @param
+	*	x0, x1 The resultant roots (if any)
+	* @return
+	*	bool If at least one root is found
+	*/
+	bool SolveQuadratic(float a, float b, float c, float& x0, float& x1)
+	{
+		// Find the discriminant
+		float disc = b * b - 4.0f * a * c;
+		// No roots
+		if(disc < 0)
+		{
+			return false;
+		}
+		// One root
+		else if(disc == 0)
+		{
+			x0 = x1 = -0.5f * b / a;
+		}
+		// Two roots
+		else
+		{
+			float q = 0.0f;
+			if(b > 0)
+			{
+				q = -0.5f * (b + sqrt(disc));
+			}
+			else
+			{
+				q = -0.5f * (b - sqrt(disc));
+			}
+			x0 = q / a;
+			x1 = c / q;
+		}
+
+		if(x0 > x1)
+		{
+			std::swap(x0, x1);
+		}
 	}
 
 }	// Namespace

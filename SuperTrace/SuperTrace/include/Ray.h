@@ -54,6 +54,48 @@ namespace SuperTrace
 		*/
 		const Vector3& getDirection() const;
 
+		/** Return the type
+		* @return 
+		*	RayType The ray type
+		*/
+		RayType getType() const;
+
+		/** Return the current tMin value
+		* @return
+		*	float tMin
+		*/
+		float getTMin() const;
+
+		/** Set tMin
+		* @param 
+		*	tMin The new tMin value
+		*/
+		void setTMin(float tMin) const;
+
+		/** Return the current tMax value
+		* @return
+		*	float tMax
+		*/
+		float getTMax() const;
+
+		/** Set tMax
+		* @param 
+		*	tMax The new tMax value
+		*/
+		void setTMax(float tMax) const;
+
+		/** Get the inverse direction
+		* @return
+		*	Vector3 The inverse direction
+		*/
+		const Vector3& getInvDirection() const;
+
+		/** Get the array of signs
+		* @return
+		*	const int* The pointer to the signs
+		*/
+		const int* getSign() const;
+
 	private:
 		/** Origin point
 		*/
@@ -69,11 +111,11 @@ namespace SuperTrace
 
 		/** Ray minimum distance
 		*/
-		float _tMin;
+		mutable float _tMin;
 
 		/** Ray maximum distance
 		*/
-		float _tMax;
+		mutable float _tMax;
 
 		/** Inverted direction
 		*/
@@ -81,7 +123,7 @@ namespace SuperTrace
 
 		/** Signs for inverted direction
 		*/
-		int sign[3];
+		int _sign[3];
 	};
 
 	/** @} */

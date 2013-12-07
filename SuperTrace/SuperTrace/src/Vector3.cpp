@@ -105,6 +105,31 @@ namespace SuperTrace
 		return *this;
 	}
 
+	/** Subtraction operator
+	* @param
+	*   vec The vector to subtract
+	* @return
+	*   Vector3 The difference of two vectors
+	*/
+	Vector3 Vector3::operator-(const Vector3& v) const
+	{
+		return Vector3(_x - v._x, _y - v._y, _z - v._z);
+	}
+
+	/** Subtraction operator
+	* @param
+	*   vec The vector to subtract
+	* @return
+	*   Vector3& The difference of two vectors
+	*/
+	Vector3& Vector3::operator-=(const Vector3& v)
+	{
+		_x -= v._x;
+		_y -= v._y;
+		_z -= v._z;
+		return *this;
+	}
+
 	/** Scale operator
 	* @param
 	*	scale The value by which to scale
