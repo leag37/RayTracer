@@ -205,19 +205,32 @@ namespace SuperTrace
 				// Create a sphere at (0, 0, -5)
 				Sphere s = Sphere(Vector3(0.0f, 0.0f, -5.0f), 1.25f);
 				Sphere s2 = Sphere(Vector3(2.0f, 0.0f, -6.0f), 0.75f);
-				if(s.testIntersect(ray) == true)
+				Sphere s3 = Sphere(Vector3(-2.0f, 1.0f, -5.0f), 1.0f);
+				bool intersect = false;
+				bool tIntersect = false;
+				if((tIntersect = s.testIntersect(ray)) == true)
 				{
+					intersect |= tIntersect;
 					pixels[pos] = 1.0f;
 					pixels[pos + 1] = 0.0f;
 					pixels[pos + 2] = 0.0f;
 				}
-				else if(s2.testIntersect(ray) == true)
+				if((tIntersect = s2.testIntersect(ray)) == true)
 				{
+					intersect |= tIntersect;
 					pixels[pos] = 0.0f;
 					pixels[pos + 1] = 0.0f;
 					pixels[pos + 2] = 1.0f;
 				}
-				else
+				if((tIntersect = s3.testIntersect(ray)) == true)
+				{
+					intersect |= tIntersect;
+					pixels[pos] = 1.0f;
+					pixels[pos + 1] = 1.0f;
+					pixels[pos + 2] = 0.0f;
+				}
+
+				if(intersect == false)
 				{
 					pixels[pos] = 0.0f;
 					pixels[pos + 1] = 1.0f;
