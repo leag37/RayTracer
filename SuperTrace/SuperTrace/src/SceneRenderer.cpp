@@ -5,6 +5,7 @@
 //*************************************************************************************************
 #include "SceneRenderer.h"
 #include "ChunkData.h"
+#include "RenderData.h"
 #include "Camera.h"
 #include "STMath.h"
 #include <Windows.h>
@@ -17,6 +18,7 @@
 namespace SuperTrace
 {
 	DWORD WINAPI RenderWorker(LPVOID lpParam);
+	DWORD WINAPI RenderProcessor(LPVOID lpParam);
 
 	/** Default constructor
 	*/
@@ -113,11 +115,19 @@ namespace SuperTrace
 	void SceneRenderer::render(unsigned int width, unsigned int height)
 	{
 		// Setup the camera
-		float fov = tan(60.0f * 0.5f * M_PI / 180.0f);
-		_camera = Camera(width, height, fov);
+		float fovy = tan(60.0f * 0.5f * M_PI / 180.0f);
+		//float fovy = 0.25f * M_PI;
+		_camera = Camera(width, height, fovy);
 
 		// First, calculate the chunk dimensions
 		getChunkDimensions(width, height);
+
+		// Initialize the pixel buffer data
+		_pixelData = new float[width * height * 3];
+		for(unsigned int i = 0; i < width * height * 3; ++i)
+		{
+			_pixelData[i] = 0.0f;
+		}
 
 		// Create the mutex
 		_renderMutex = CreateMutex(NULL, FALSE, NULL);
@@ -142,6 +152,14 @@ namespace SuperTrace
 										0,
 										&threadId);
 		}
+
+		// Create thread for render processor
+		CreateThread(	NULL,
+						0,
+						(LPTHREAD_START_ROUTINE) RenderProcessor,
+						(LPVOID) this,
+						0,
+						&threadId);
 
 		// Second, iterate over each section and render
 		for(unsigned int i = 0; i < _numChunks; ++i)
@@ -203,9 +221,10 @@ namespace SuperTrace
 				pixels[pos + 2] = 0.0f;
 				*/
 				// Create a sphere at (0, 0, -5)
-				Sphere s = Sphere(Vector3(0.0f, 0.0f, -5.0f), 1.25f);
-				Sphere s2 = Sphere(Vector3(2.0f, 0.0f, -6.0f), 0.75f);
-				Sphere s3 = Sphere(Vector3(-2.0f, 1.0f, -5.0f), 1.0f);
+				Sphere s = Sphere(Vector3(0.0f, 0.0f, -10.0f), 2.5f);
+				Sphere s2 = Sphere(Vector3(4.0f, 0.0f, -12.0f), 1.5f);
+				Sphere s3 = Sphere(Vector3(-4.0f, 2.0f, -10.0f), 2.0f);
+				Sphere s4 = Sphere(Vector3(0.0f, 6.0f, -10.0f), 3.0f);
 				bool intersect = false;
 				bool tIntersect = false;
 				if((tIntersect = s.testIntersect(ray)) == true)
@@ -229,6 +248,13 @@ namespace SuperTrace
 					pixels[pos + 1] = 1.0f;
 					pixels[pos + 2] = 0.0f;
 				}
+				if((tIntersect = s4.testIntersect(ray)) == true)
+				{
+					intersect |= tIntersect;
+					pixels[pos] = 1.0f;
+					pixels[pos + 1] = 0.0f;
+					pixels[pos + 2] = 1.0f;
+				}
 
 				if(intersect == false)
 				{
@@ -247,44 +273,84 @@ namespace SuperTrace
 		float initY = static_cast<float>(_cHeight * startY);
 		float totalY = static_cast<float>(_cHeight * _numChunks) * 0.5f;
 		float ypos = (initY / totalY) - 1.0f;
-//		float xpos = float(_cWidth * startX) / float((_cWidth * _numChunks) >> 1) - 1.0f;
-//		float ypos = (float)(_cHeight * startY) / float((_cHeight * _numChunks) >> 1) - 1.0f;
 
-		// Get handle on mutex
-		bool tryHandle = true;
-		while(tryHandle == true)
+		// Add to the list of completed blocks
+		addRenderData(startX, startY, pixels);
+	}
+
+	// Add render data
+	void SceneRenderer::addRenderData(unsigned int startX, unsigned int startY, float* renderData)
+	{
+		// Create pointer to render data
+		RenderData* rd = new RenderData();
+		rd->_startX = startX;
+		rd->_startY = startY;
+		rd->_pixelData = renderData;
+
+		// First, acquire the job mutex
+		bool tryEnqueue = true;
+		while(tryEnqueue == true)
 		{
 			HRESULT result = WaitForSingleObject(_renderMutex, 1000);
-
 			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
 			{
-				Sleep(10);
+				Sleep(100);
 			}
 			else
 			{
-				// Tally the number of jobs we have left to handle
-				decrementJobCount();
+				// Enqueue and release
+				_renderQueue.push(rd);
 
-				// Create a context for this thread
-				BOOL success = wglMakeCurrent(_hDC, _hRC);
-
-				glRasterPos2f(xpos, ypos);
-				glDrawPixels(_cWidth, _cHeight, GL_RGB, GL_FLOAT, pixels);
-				glFinish();
-				
-				// Delete the rendering context
-				wglMakeCurrent(NULL, NULL);
-
-				// Release mutex
+				// Release the mutex
 				ReleaseMutex(_renderMutex);
 
-				// We are finished with this thread
-				tryHandle = false;
+				// Exit loop
+				tryEnqueue = false;
+			}
+		}
+	} 
+
+	// Try to get a piece of render data
+	RenderData* SceneRenderer::getRenderData()
+	{
+		// The data to return
+		RenderData* data = 0;
+
+		// First, acquire the job mutex
+		bool tryDequeue = true;
+		while(tryDequeue == true)
+		{
+			// First, test for valid queue entry
+			if(_renderQueue.size() == 0)
+			{
+				tryDequeue = false;
+			}
+			else
+			{
+				// There is a valid queue entry at lock attempt time
+				HRESULT result = WaitForSingleObject(_renderMutex, 1000);
+				if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
+				{
+					Sleep(10);
+				}
+				else
+				{
+					// Now that we have acquired the lock, make sure we still have a valid queue entry
+
+					if(_renderQueue.size() > 0)
+					{
+						data = _renderQueue.front();
+						_renderQueue.pop();
+						tryDequeue = false;
+					}
+
+					// Release the mutex
+					ReleaseMutex(_renderMutex);
+				}
 			}
 		}
 
-		// Release the array of pixels
-		delete[] pixels;
+		return data;
 	}
 
 	// Enqueue a chunk
@@ -356,7 +422,6 @@ namespace SuperTrace
 		return data;
 	}
 
-
 	void SceneRenderer::setContext(HDC hDC, HGLRC hRC)
 	{
 		_hDC = hDC;
@@ -374,6 +439,45 @@ namespace SuperTrace
 	bool SceneRenderer::getIsSceneComplete()
 	{
 		return _numJobs == 0;
+	}
+
+	// Acquire the render context
+	void SceneRenderer::acquireContext()
+	{
+		// Create a context for this thread
+		BOOL success = wglMakeCurrent(_hDC, _hRC);
+	}
+
+	// Draw a scene
+	void SceneRenderer::drawToScreen(RenderData* data)
+	{
+		// Global position
+		unsigned int width = _cWidth * _numChunks;
+		unsigned int height = _cHeight * _numChunks;
+		for(unsigned int i = 0; i < _cHeight; ++i)
+		{
+			for(unsigned int j = 0; j < _cWidth; ++j)
+			{
+				unsigned int pos = ((i * _cWidth) + j) * 3;
+				unsigned int base = ((width * _cHeight) * data->_startY) + (width * i);
+				unsigned int offset = (data->_startX * _cWidth) + j;
+
+				// Inverse the base
+				base = (width * height) - base - width;
+
+				unsigned int p = (base + offset) * 3;
+				_pixelData[p] = data->_pixelData[pos];
+				_pixelData[p + 1] = data->_pixelData[pos + 1];
+				_pixelData[p + 2] = data->_pixelData[pos + 2];
+			}
+		}
+
+		// Tally the number of jobs we have left to handle
+		decrementJobCount();
+
+		glRasterPos2f(-1.0f, -1.0f);
+		glDrawPixels(_cWidth * _numChunks, _cHeight * _numChunks, GL_RGB, GL_FLOAT, _pixelData);
+		glFinish();
 	}
 
 	DWORD WINAPI RenderWorker(LPVOID lpParam)
@@ -394,6 +498,39 @@ namespace SuperTrace
 
 				// Delete the data
 				delete data;
+			}
+			else
+			{
+				Sleep(1000);
+			}
+		}
+
+		return 0;
+	}
+
+	DWORD WINAPI RenderProcessor(LPVOID lpParam)
+	{
+		// Get context
+		SceneRenderer* sceneRenderer = static_cast<SceneRenderer*>(lpParam);
+
+		// Acquire gl context for this thread
+		sceneRenderer->acquireContext();
+		
+		// While the scene is not complete
+		while(sceneRenderer->getIsSceneComplete() == false)
+		{
+			// Get a chunk from the queue
+			RenderData* data = sceneRenderer->getRenderData();
+
+			// If the chunk is valid, render otherwise skip
+			if(data != 0)
+			{
+				sceneRenderer->drawToScreen(data);
+				delete data;
+			}
+			else
+			{
+				Sleep(1000);
 			}
 		}
 

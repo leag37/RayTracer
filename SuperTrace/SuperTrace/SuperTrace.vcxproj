@@ -28,6 +28,7 @@
     <ClInclude Include="include\ChunkData.h" />
     <ClInclude Include="include\Matrix44.h" />
     <ClInclude Include="include\Ray.h" />
+    <ClInclude Include="include\RenderData.h" />
     <ClInclude Include="include\SceneRenderer.h" />
     <ClInclude Include="include\Sphere.h" />
     <ClInclude Include="include\STMath.h" />

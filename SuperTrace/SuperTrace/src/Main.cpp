@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 				// Create the scene renderer
 				SceneRenderer* sceneRenderer= new SceneRenderer();
 				sceneRenderer->calcOptimalChunks(width, height);
-//				sceneRenderer->setNumChunks(1);
+				//sceneRenderer->setNumChunks(32);
 
 				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 				glClear(GL_COLOR_BUFFER_BIT);
@@ -176,6 +176,11 @@ void EnableOpenGL(HWND hwnd, HDC* hDC, HGLRC* hRC)
 	*hRC = wglCreateContext(*hDC);
 
 	wglMakeCurrent(*hDC, *hRC);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();	
 }
 
 void DisableOpenGL (HWND hwnd, HDC hDC, HGLRC hRC)

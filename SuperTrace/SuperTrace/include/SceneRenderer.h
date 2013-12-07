@@ -18,6 +18,7 @@ namespace SuperTrace
 	*/
 
 	class ChunkData;
+	class RenderData;
 
 	class SceneRenderer
 	{
@@ -74,6 +75,15 @@ namespace SuperTrace
 		// Dequeue a chunk
 		ChunkData* dequeue();
 
+		// Get a piece of render data
+		RenderData* getRenderData();
+
+		// Acquire the render context
+		void acquireContext();
+
+		// Draw a scene
+		void drawToScreen(RenderData* data);
+
 	private:
 		/** Calculate the chunk dimensions
 		* @param
@@ -85,6 +95,9 @@ namespace SuperTrace
 
 		// Decrement the number of jobs left to handle
 		void decrementJobCount();
+
+		// Add to the render data list
+		void addRenderData(unsigned int startX, unsigned int startY, float* renderData);
 
 	private:
 		/** The number of chunks/jobs we want to split the render job into
@@ -115,6 +128,10 @@ namespace SuperTrace
 		*/
 		std::queue<ChunkData*> _queue;
 
+		/** Array of render data
+		*/
+		std::queue<RenderData*> _renderQueue;
+
 		/** Render context values
 		*/
 		HDC _hDC;
@@ -127,6 +144,10 @@ namespace SuperTrace
 		/** The chunk height
 		*/
 		unsigned int _cHeight;
+
+		/** Global buffer
+		*/
+		float* _pixelData;
 
 		/** Camera
 		*/

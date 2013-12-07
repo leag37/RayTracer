@@ -4,6 +4,7 @@
 // Description: A camera in the world.
 //*************************************************************************************************
 #include "Camera.h"
+#include "STMath.h"
 
 namespace SuperTrace
 {
@@ -81,16 +82,46 @@ namespace SuperTrace
 		float fWidth = static_cast<float>(_width);
 		float fHeight = static_cast<float>(_height);
 
-		float sX = (2.0f * (fX + 0.5f) / fWidth) - 1.0f;
-		sX *= _fov * _aspectRatio;
-		float sY = 1.0f - (2.0f * (fY + 0.5f) / fHeight);
+		// First map fX and fY from raster space to NDC space
+		float sX = (fX + 0.5f) / fWidth;
+		float sY = (fY + 0.5f) / fHeight;
+
+		// Next, map from NDC to screen space
+		sX = (2.0f * sX) - 1.0f;
+		sY = 1.0f - (2.0f * sY);
+
+		// Apply aspect ratio to X coordinate
+		sX *= _aspectRatio;
+
+		// TEST - y aspect ratio
+		// As y deviates from the center line, scale it by a fraction of the inverse aspect ratio
+		//float invAspect = 1.0f / _aspectRatio;
+		//sY *= invAspect;
+		// END TEST
+
+		// Multiply by field of view
+		sX *= _fov;
 		sY *= _fov;
 
-		Vector3 direction = Vector3(sX, sY, -1.0f);
-		direction.normalize();
+		// Now we can get the position of the point in camera space as (sX, sY, -1)
+		Vector3 pCamera = Vector3(sX, sY, -1.0f);
+		Vector3 rayDirection = pCamera - _position;
+		
+		// Build the perspective matrix
+		float f = 1.0f / _fov;
+		float near = 1.0f;
+		float far = 1000.0f;
+		Matrix44 persp = Matrix44(
+			f, 0.0f, 0.0f, 0.0f,
+			0.0f, f, 0.0f, 0.0f,
+			0.0f, 0.0f, far/(far-near), 1.0f,
+			0.0f, 0.0f, -(far*near)/(far-near), 0.0f);
+		Vector3 temp = rayDirection;
+		rayDirection = Vector3Transform(rayDirection, persp);
+		
+		rayDirection.normalize();
 
-		// Create the ray direction by traveling from (0,0,0) to (sX, sY, -1)
-		return Ray(_position, direction);
+		return Ray(_position, rayDirection);
 	}
 
 }	// Namespace

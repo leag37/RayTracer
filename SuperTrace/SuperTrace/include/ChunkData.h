@@ -19,7 +19,6 @@ namespace SuperTrace
         unsigned int _startX;
         unsigned int _startY;
     };
-
 }
 
 #endif // __STCHUNKDATA_H__
