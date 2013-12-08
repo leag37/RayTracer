@@ -7,6 +7,7 @@
 #define __STBOX3_H__
 
 #include "Vector3.h"
+#include "Object.h"
 
 namespace SuperTrace
 {
@@ -14,14 +15,12 @@ namespace SuperTrace
 	*	@{
 	*/
 
-	class Ray;
-
-	class Box3
+	class Box3 : public Object
 	{
 	public:
 		/** Constructor
 		*/
-		Box3(const Vector3& min, const Vector3& max);
+		Box3(const Matrix44& world, const Vector3& min, const Vector3& max);
 
 		/** Test for an intersection between a ray and this box
 		* @param
@@ -29,7 +28,7 @@ namespace SuperTrace
 		* @return
 		*	bool True if intersection is found, false otherwise
 		*/
-		bool testIntersect(const Ray& ray) const;
+		bool intersect(const Ray& ray) const;
 
 	private:
 		/** Bounds of our box

@@ -7,21 +7,20 @@
 #define __STSPHERE_H__
 
 #include "Vector3.h"
+#include "Object.h"
 
 namespace SuperTrace
 {
 	/** \addtogroup Object
 	*	@{
 	*/
-	
-	class Ray;
 
-	class Sphere
+	class Sphere : public Object
 	{
 	public:
-		Sphere(const Vector3& center, float radius);
+		Sphere(const Matrix44& world, const Vector3& center, float radius);
 
-		bool testIntersect(const Ray& ray) const;
+		bool intersect(const Ray& ray) const;
 
 	private:
 		Vector3 _center;

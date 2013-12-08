@@ -10,7 +10,8 @@ namespace SuperTrace
 {
 	/** Constructor
 	*/
-	Box3::Box3(const Vector3& min, const Vector3& max)
+	Box3::Box3(const Matrix44& world, const Vector3& min, const Vector3& max)
+		:	Object(world)
 	{
 		_bounds[0] = min;
 		_bounds[1] = max;
@@ -22,7 +23,7 @@ namespace SuperTrace
 	* @return
 	*	bool True if intersection is found, false otherwise
 	*/
-	bool Box3::testIntersect(const Ray& ray) const
+	bool Box3::intersect(const Ray& ray) const
 	{
 		float tMin, tMax, tyMin, tyMax, tzMin, tzMax;
 

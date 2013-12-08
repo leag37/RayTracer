@@ -17,8 +17,8 @@
 
 namespace SuperTrace
 {
+	DWORD WINAPI TraceWorker(LPVOID lpParam);
 	DWORD WINAPI RenderWorker(LPVOID lpParam);
-	DWORD WINAPI RenderProcessor(LPVOID lpParam);
 
 	/** Default constructor
 	*/
@@ -116,7 +116,6 @@ namespace SuperTrace
 	{
 		// Setup the camera
 		float fovy = tan(60.0f * 0.5f * M_PI / 180.0f);
-		//float fovy = 0.25f * M_PI;
 		_camera = Camera(width, height, fovy);
 
 		// First, calculate the chunk dimensions
@@ -147,7 +146,7 @@ namespace SuperTrace
 		{
 			_workers[i] = CreateThread(	NULL,
 										0,
-										(LPTHREAD_START_ROUTINE) RenderWorker,
+										(LPTHREAD_START_ROUTINE) TraceWorker,
 										(LPVOID) this,
 										0,
 										&threadId);
@@ -156,7 +155,7 @@ namespace SuperTrace
 		// Create thread for render processor
 		CreateThread(	NULL,
 						0,
-						(LPTHREAD_START_ROUTINE) RenderProcessor,
+						(LPTHREAD_START_ROUTINE) RenderWorker,
 						(LPVOID) this,
 						0,
 						&threadId);
@@ -167,7 +166,7 @@ namespace SuperTrace
 			for(unsigned int j = 0; j < _numChunks; ++j)
 			{
 				// Ask enqueue object
-				enqueue(new ChunkData(i, j));
+				addTraceableChunk(new ChunkData(i, j));
 			}
 		}
 	}
@@ -191,7 +190,7 @@ namespace SuperTrace
 	* @param
 	*   startY The starting y index
 	*/
-	void SceneRenderer::renderChunk(unsigned int startX, unsigned int startY)
+	void SceneRenderer::traceChunk(unsigned int startX, unsigned int startY)
 	{
 		float* pixels = new float[_cWidth*_cHeight*3];
 		for(unsigned int i = 0; i < _cHeight; ++i)
@@ -199,56 +198,45 @@ namespace SuperTrace
 			for(unsigned int j = 0; j < _cWidth; ++j)
 			{
 				int pos = ((i * _cWidth) + j) * 3;
-/*				int ni = i + (_cHeight * startY);
-				int nj = j + (_cWidth * startX);
 
-				pixels[pos * 3] = (float)(nj) / float(_cWidth * _numChunks);
-				pixels[pos * 3 + 1] = (float) (ni + nj) / float((_cWidth + _cHeight) * _numChunks);
-				pixels[pos * 3 + 2] = (float) (nj) / float(_cHeight * _numChunks);
-				*/
 				// Get the raster position
 				unsigned int x = _cWidth * startX + j;
 				unsigned int y = _cHeight * startY + i;
 
-/*				pixels[pos] = float(startX) / float(_numChunks);
-				pixels[pos + 1] = float(startY) / float(_numChunks);
-				pixels[pos + 2] = float(startX + startY) / float(_numChunks + _numChunks);
-				*/
 				// Get the direction ray
 				Ray ray = _camera.rasterToRay(x, y);
-/*				pixels[pos] = (1.0f + ray.getDirection().getX()) * 0.5f;
-				pixels[pos + 1] = (1.0f + ray.getDirection().getY()) * 0.5f;
-				pixels[pos + 2] = 0.0f;
-				*/
+
 				// Create a sphere at (0, 0, -5)
-				Sphere s = Sphere(Vector3(0.0f, 0.0f, -10.0f), 2.5f);
-				Sphere s2 = Sphere(Vector3(4.0f, 0.0f, -12.0f), 1.5f);
-				Sphere s3 = Sphere(Vector3(-4.0f, 2.0f, -10.0f), 2.0f);
-				Sphere s4 = Sphere(Vector3(0.0f, 6.0f, -10.0f), 3.0f);
+				Matrix44 i;
+				i.setIdentity();
+				Sphere s = Sphere(i, Vector3(0.0f, 0.0f, -10.0f), 2.5f);
+				Sphere s2 = Sphere(i, Vector3(4.0f, 0.0f, -12.0f), 1.5f);
+				Sphere s3 = Sphere(i, Vector3(-4.0f, 2.0f, -10.0f), 2.0f);
+				Sphere s4 = Sphere(i, Vector3(0.0f, 6.0f, -10.0f), 3.0f);
 				bool intersect = false;
 				bool tIntersect = false;
-				if((tIntersect = s.testIntersect(ray)) == true)
+				if((tIntersect = s.intersect(ray)) == true)
 				{
 					intersect |= tIntersect;
 					pixels[pos] = 1.0f;
 					pixels[pos + 1] = 0.0f;
 					pixels[pos + 2] = 0.0f;
 				}
-				if((tIntersect = s2.testIntersect(ray)) == true)
+				if((tIntersect = s2.intersect(ray)) == true)
 				{
 					intersect |= tIntersect;
 					pixels[pos] = 0.0f;
 					pixels[pos + 1] = 0.0f;
 					pixels[pos + 2] = 1.0f;
 				}
-				if((tIntersect = s3.testIntersect(ray)) == true)
+				if((tIntersect = s3.intersect(ray)) == true)
 				{
 					intersect |= tIntersect;
 					pixels[pos] = 1.0f;
 					pixels[pos + 1] = 1.0f;
 					pixels[pos + 2] = 0.0f;
 				}
-				if((tIntersect = s4.testIntersect(ray)) == true)
+				if((tIntersect = s4.intersect(ray)) == true)
 				{
 					intersect |= tIntersect;
 					pixels[pos] = 1.0f;
@@ -354,7 +342,7 @@ namespace SuperTrace
 	}
 
 	// Enqueue a chunk
-	void SceneRenderer::enqueue(ChunkData* chunk)
+	void SceneRenderer::addTraceableChunk(ChunkData* chunk)
 	{
 		// First, acquire the job mutex
 		bool tryEnqueue = true;
@@ -368,7 +356,7 @@ namespace SuperTrace
 			else
 			{
 				// Enqueue and release
-				_queue.push(chunk);
+				_chunkQueue.push(chunk);
 
 				// Release the mutex
 				ReleaseMutex(_jobMutex);
@@ -380,7 +368,7 @@ namespace SuperTrace
 	}
 
 	// Dequeue a chunk
-	ChunkData* SceneRenderer::dequeue()
+	ChunkData* SceneRenderer::getTraceableChunk()
 	{
 		// The data to return
 		ChunkData* data = 0;
@@ -390,7 +378,7 @@ namespace SuperTrace
 		while(tryDequeue == true)
 		{
 			// First, test for valid queue entry
-			if(_queue.size() == 0)
+			if(_chunkQueue.size() == 0)
 			{
 				tryDequeue = false;
 			}
@@ -406,10 +394,10 @@ namespace SuperTrace
 				{
 					// Now that we have acquired the lock, make sure we still have a valid queue entry
 
-					if(_queue.size() > 0)
+					if(_chunkQueue.size() > 0)
 					{
-						data = _queue.front();
-						_queue.pop();
+						data = _chunkQueue.front();
+						_chunkQueue.pop();
 						tryDequeue = false;
 					}
 
@@ -480,21 +468,21 @@ namespace SuperTrace
 		glFinish();
 	}
 
-	DWORD WINAPI RenderWorker(LPVOID lpParam)
+	DWORD WINAPI TraceWorker(LPVOID lpParam)
 	{
-		// Get context
+		// Get the scene
 		SceneRenderer* sceneRenderer = static_cast<SceneRenderer*>(lpParam);
 		
 		// While the scene is not complete
 		while(sceneRenderer->getIsSceneComplete() == false)
 		{
 			// Get a chunk from the queue
-			ChunkData* data = sceneRenderer->dequeue();
+			ChunkData* data = sceneRenderer->getTraceableChunk();
 
 			// If the chunk is valid, render otherwise skip
 			if(data != 0)
 			{
-				sceneRenderer->renderChunk(data->_startX, data->_startY);
+				sceneRenderer->traceChunk(data->_startX, data->_startY);
 
 				// Delete the data
 				delete data;
@@ -508,7 +496,7 @@ namespace SuperTrace
 		return 0;
 	}
 
-	DWORD WINAPI RenderProcessor(LPVOID lpParam)
+	DWORD WINAPI RenderWorker(LPVOID lpParam)
 	{
 		// Get context
 		SceneRenderer* sceneRenderer = static_cast<SceneRenderer*>(lpParam);

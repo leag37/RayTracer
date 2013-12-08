@@ -15,7 +15,6 @@ namespace SuperTrace
 	*/
 
 	class Ray;
-	class IntersectData;
 
 	class Object
 	{
@@ -36,7 +35,7 @@ namespace SuperTrace
 		* @param
 		*	intersectData The object that holds intersection data (point of contact, etc)
 		*/
-		virtual bool intersect(const Ray& ray, IntersectData& intersectData) const;
+		virtual bool intersect(const Ray& ray) const = 0;
 
 		/** Get the color
 		* @return

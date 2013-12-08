@@ -9,11 +9,11 @@
 
 namespace SuperTrace
 {
-	Sphere::Sphere(const Vector3& center, float radius)
-		:	_center(center), _radius(radius)
+	Sphere::Sphere(const Matrix44& world, const Vector3& center, float radius)
+		:	Object(world), _center(center), _radius(radius)
 	{ }
 
-	bool Sphere::testIntersect(const Ray& ray) const
+	bool Sphere::intersect(const Ray& ray) const
 	{
 		//float t0, t1;
 

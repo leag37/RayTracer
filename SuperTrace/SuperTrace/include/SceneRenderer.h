@@ -59,7 +59,7 @@ namespace SuperTrace
 		* @param
 		*   startY The starting y index
 		*/
-		void renderChunk(unsigned int startX, unsigned int startY);
+		void traceChunk(unsigned int startX, unsigned int startY);
 
 		/** Set context
 		*/
@@ -70,10 +70,10 @@ namespace SuperTrace
 		bool getIsSceneComplete();
 
 		// Enqueue a chunk
-		void enqueue(ChunkData* chunk);
+		void addTraceableChunk(ChunkData* chunk);
 
 		// Dequeue a chunk
-		ChunkData* dequeue();
+		ChunkData* getTraceableChunk();
 
 		// Get a piece of render data
 		RenderData* getRenderData();
@@ -126,7 +126,7 @@ namespace SuperTrace
 
 		/** Array of chunk data
 		*/
-		std::queue<ChunkData*> _queue;
+		std::queue<ChunkData*> _chunkQueue;
 
 		/** Array of render data
 		*/
