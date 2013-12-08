@@ -17,6 +17,7 @@
     <ClCompile Include="src\ChunkData.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Matrix44.cpp" />
+    <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\SceneRenderer.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\STMath.cpp" />
@@ -27,6 +28,7 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ChunkData.h" />
     <ClInclude Include="include\Matrix44.h" />
+    <ClInclude Include="include\Object.h" />
     <ClInclude Include="include\Ray.h" />
     <ClInclude Include="include\RenderData.h" />
     <ClInclude Include="include\SceneRenderer.h" />

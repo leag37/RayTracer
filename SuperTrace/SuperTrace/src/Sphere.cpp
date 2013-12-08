@@ -15,36 +15,36 @@ namespace SuperTrace
 
 	bool Sphere::testIntersect(const Ray& ray) const
 	{
-		float t0, t1;
+		//float t0, t1;
 
-		Vector3 L = _center - ray.getOrigin();
-		float tca = L.dot(ray.getDirection());
-		if(tca < 0.0f)
-		{
-			return false;
-		}
+		//Vector3 L = _center - ray.getOrigin();
+		//float tca = L.dot(ray.getDirection());
+		//if(tca < 0.0f)
+		//{
+		//	return false;
+		//}
 
-		float radius2 = _radius * _radius;
-		float d2 = L.dot(L) - (tca * tca);
-		if(d2 > radius2)
-		{
-			return false;
-		}
+		//float radius2 = _radius * _radius;
+		//float d2 = L.dot(L) - (tca * tca);
+		//if(d2 > radius2)
+		//{
+		//	return false;
+		//}
 
-		float thc = sqrt(radius2 - d2);
-		t0 = tca - thc;
-		t1 = tca + thc;
-		if(t0 > ray.getTMax())
-		{
-			return false;
-		}
-		else
-		{
-			ray.setTMax(t0);
-		}
-		return true;
+		//float thc = sqrt(radius2 - d2);
+		//t0 = tca - thc;
+		//t1 = tca + thc;
+		//if(t0 > ray.getTMax())
+		//{
+		//	return false;
+		//}
+		//else
+		//{
+		//	ray.setTMax(t0);
+		//}
+		//return true;
 
-/*		// Solution for t if the ray intersects
+		// Solution for t if the ray intersects
 		float t0, t1;
 
 		// Use the analytic solution
@@ -70,7 +70,7 @@ namespace SuperTrace
 		{
 			ray.setTMax(t0);
 		}
-		return true;*/
+		return true;
 	}
 
 }	// Namespace
