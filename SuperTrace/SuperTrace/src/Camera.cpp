@@ -116,7 +116,6 @@ namespace SuperTrace
 			0.0f, f, 0.0f, 0.0f,
 			0.0f, 0.0f, far/(far-near), 1.0f,
 			0.0f, 0.0f, -(far*near)/(far-near), 0.0f);
-		Vector3 temp = rayDirection;
 		rayDirection = Vector3Transform(rayDirection, persp);
 		
 		rayDirection.normalize();

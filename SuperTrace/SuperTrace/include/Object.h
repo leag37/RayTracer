@@ -7,6 +7,7 @@
 #define __STOBJECT_H__
 
 #include "STMath.h"
+#include "Color.h"
 
 namespace SuperTrace
 {
@@ -41,7 +42,7 @@ namespace SuperTrace
 		* @return
 		*	Vector3 The color vector for this object
 		*/
-		const Vector3& getColor() const;
+		const Color& getColor() const;
 
 	protected:
 		/** World matrix
@@ -50,7 +51,7 @@ namespace SuperTrace
 
 		/** Object color
 		*/
-		Vector3 _color;
+		Color _color;
 	};
 
 	/** @} */

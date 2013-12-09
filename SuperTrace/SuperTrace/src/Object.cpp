@@ -16,7 +16,7 @@ namespace SuperTrace
 		:	_world(world)
 	{
 		// Get random colors
-		_color = Vector3(	static_cast<float>(rand()) / static_cast<float>(RAND_MAX),
+		_color = Color(	static_cast<float>(rand()) / static_cast<float>(RAND_MAX),
 							static_cast<float>(rand()) / static_cast<float>(RAND_MAX),
 							static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
 	}
@@ -31,7 +31,7 @@ namespace SuperTrace
 	* @return
 	*	Vector3 The color vector for this object
 	*/
-	const Vector3& Object::getColor() const
+	const Color& Object::getColor() const
 	{
 		return _color;
 	}

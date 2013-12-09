@@ -18,15 +18,19 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Matrix44.cpp" />
     <ClCompile Include="src\Object.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\SceneRenderer.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\STMath.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
+    <ClCompile Include="src\Vector4.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Box3.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ChunkData.h" />
+    <ClInclude Include="include\Color.h" />
+    <ClInclude Include="include\Light.h" />
     <ClInclude Include="include\Matrix44.h" />
     <ClInclude Include="include\Object.h" />
     <ClInclude Include="include\Ray.h" />
@@ -36,6 +40,7 @@
     <ClInclude Include="include\Sphere.h" />
     <ClInclude Include="include\STMath.h" />
     <ClInclude Include="include\Vector3.h" />
+    <ClInclude Include="include\Vector4.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{80441AC7-730F-4E15-A1CE-DD3AD2F393AA}</ProjectGuid>
@@ -69,6 +74,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

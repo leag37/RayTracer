@@ -19,6 +19,7 @@ namespace SuperTrace
 
 	class ChunkData;
 	class RenderData;
+	class Scene;
 
 	class SceneRenderer
 	{
@@ -114,11 +115,11 @@ namespace SuperTrace
 
 		/** Mutex
 		*/
-		HANDLE _renderMutex;
+		CRITICAL_SECTION _renderMutex;
 
 		/** Job mutex
 		*/
-		HANDLE _jobMutex;
+		CRITICAL_SECTION _jobMutex;
 
 		/** Number of jobs to handle total
 		*/
@@ -149,9 +150,9 @@ namespace SuperTrace
 		*/
 		float* _pixelData;
 
-		/** Camera
+		/** The scene
 		*/
-		Camera _camera;
+		Scene* _scene;
 	};
 
 	/** @} */

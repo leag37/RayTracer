@@ -68,7 +68,7 @@ namespace SuperTrace
 	bool SolveQuadratic(float a, float b, float c, float& x0, float& x1)
 	{
 		// Find the discriminant
-		float disc = b * b - 4.0f * a * c;
+		float disc = (b * b) - (4.0f * a * c);
 		// No roots
 		if(disc < 0)
 		{
@@ -99,6 +99,7 @@ namespace SuperTrace
 		{
 			std::swap(x0, x1);
 		}
+		return true;
 	}
 
 }	// Namespace

@@ -31,6 +31,10 @@ namespace SuperTrace
 		*/
 		void createScene();
 
+		/** Create the camera for the scene
+		*/
+		void setCamera(Camera* camera);
+
 		/** Trace a given rasterized position
 		* @param
 		*	x The rasterized x position
@@ -40,9 +44,13 @@ namespace SuperTrace
 		Color trace(unsigned int x, unsigned int y);
 
 	private:
-		/** Create the camera for the scene
+		/** Create lights
 		*/
-		void createCamera();
+		void createLights();
+
+		/** Add objects to the scene
+		*/
+		void createObjects();
 
 	private:
 		/** List of objects in the scene

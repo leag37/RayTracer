@@ -8,6 +8,8 @@
 #include "RenderData.h"
 #include "Camera.h"
 #include "STMath.h"
+#include "Scene.h"
+#include "Color.h"
 #include <Windows.h>
 #include <gl/GL.h>
 
@@ -19,6 +21,7 @@ namespace SuperTrace
 {
 	DWORD WINAPI TraceWorker(LPVOID lpParam);
 	DWORD WINAPI RenderWorker(LPVOID lpParam);
+	CRITICAL_SECTION cs;
 
 	/** Default constructor
 	*/
@@ -114,9 +117,13 @@ namespace SuperTrace
 	*/
 	void SceneRenderer::render(unsigned int width, unsigned int height)
 	{
+		_scene = new Scene();
+		_scene->createScene();
+
 		// Setup the camera
 		float fovy = tan(60.0f * 0.5f * M_PI / 180.0f);
-		_camera = Camera(width, height, fovy);
+		Camera* camera = new Camera(width, height, fovy);
+		_scene->setCamera(camera);
 
 		// First, calculate the chunk dimensions
 		getChunkDimensions(width, height);
@@ -129,8 +136,9 @@ namespace SuperTrace
 		}
 
 		// Create the mutex
-		_renderMutex = CreateMutex(NULL, FALSE, NULL);
-		_jobMutex = CreateMutex(NULL, FALSE, NULL);
+		InitializeCriticalSectionAndSpinCount(&_renderMutex, 0x00000400);
+		InitializeCriticalSectionAndSpinCount(&_jobMutex, 0x00000400);
+		InitializeCriticalSectionAndSpinCount(&cs, 0x00000400);
 
 		// Initialize the number of threads
 		_numWorkers = 100;
@@ -159,7 +167,7 @@ namespace SuperTrace
 						(LPVOID) this,
 						0,
 						&threadId);
-
+						
 		// Second, iterate over each section and render
 		for(unsigned int i = 0; i < _numChunks; ++i)
 		{
@@ -192,110 +200,86 @@ namespace SuperTrace
 	*/
 	void SceneRenderer::traceChunk(unsigned int startX, unsigned int startY)
 	{
-		float* pixels = new float[_cWidth*_cHeight*3];
+		//float* pixels = new float[_cWidth*_cHeight*3];
+		unsigned int width = _cWidth * _numChunks;
+		unsigned int height = _cHeight * _numChunks;
+
+		bool test = false;
+		
 		for(unsigned int i = 0; i < _cHeight; ++i)
 		{
+			// Calculate base array position
+			unsigned int base = ((width * _cHeight) * startY) + (width * i);
+			// Inverse the base
+			base = (width * height) - base - width;
+	
+			// Calculate rasterized y value
+			unsigned int y = _cHeight * startY + i;
+
 			for(unsigned int j = 0; j < _cWidth; ++j)
 			{
 				int pos = ((i * _cWidth) + j) * 3;
 
 				// Get the raster position
 				unsigned int x = _cWidth * startX + j;
-				unsigned int y = _cHeight * startY + i;
+				
+				// Get a color from the scene
+				Color color = _scene->trace(x, y);
 
-				// Get the direction ray
-				Ray ray = _camera.rasterToRay(x, y);
+/*				if(color.r == float(float(x)/1024.0f) || color.g == float(float(y)/768.0f))
+				{
+					if(startX > 8 && startX < 24 && startY > 8 && startY < 24)
+					{
+						int a =0;
+						_scene->trace(x, y);
+					}
+					test = true;
+				}*/
 
-				// Create a sphere at (0, 0, -5)
-				Matrix44 i;
-				i.setIdentity();
-				Sphere s = Sphere(i, Vector3(0.0f, 0.0f, -10.0f), 2.5f);
-				Sphere s2 = Sphere(i, Vector3(4.0f, 0.0f, -12.0f), 1.5f);
-				Sphere s3 = Sphere(i, Vector3(-4.0f, 2.0f, -10.0f), 2.0f);
-				Sphere s4 = Sphere(i, Vector3(0.0f, 6.0f, -10.0f), 3.0f);
-				bool intersect = false;
-				bool tIntersect = false;
-				if((tIntersect = s.intersect(ray)) == true)
-				{
-					intersect |= tIntersect;
-					pixels[pos] = 1.0f;
-					pixels[pos + 1] = 0.0f;
-					pixels[pos + 2] = 0.0f;
-				}
-				if((tIntersect = s2.intersect(ray)) == true)
-				{
-					intersect |= tIntersect;
-					pixels[pos] = 0.0f;
-					pixels[pos + 1] = 0.0f;
-					pixels[pos + 2] = 1.0f;
-				}
-				if((tIntersect = s3.intersect(ray)) == true)
-				{
-					intersect |= tIntersect;
-					pixels[pos] = 1.0f;
-					pixels[pos + 1] = 1.0f;
-					pixels[pos + 2] = 0.0f;
-				}
-				if((tIntersect = s4.intersect(ray)) == true)
-				{
-					intersect |= tIntersect;
-					pixels[pos] = 1.0f;
-					pixels[pos + 1] = 0.0f;
-					pixels[pos + 2] = 1.0f;
-				}
-
-				if(intersect == false)
-				{
-					pixels[pos] = 0.0f;
-					pixels[pos + 1] = 1.0f;
-					pixels[pos + 2] = 0.0f;
-				}
+				// Calculate offset from width
+				unsigned int offset = (startX * _cWidth) + j;
+				unsigned int p = (base + offset) * 3;
+				_pixelData[p] = color.r;
+				_pixelData[p + 1] = color.g;
+				_pixelData[p + 2] = color.b;
 			}
 		}
 
+		if(test == true && startX > 8 && startX < 24 && startY > 8 && startY < 24)
+		{
+			int a = 0;
+		}
+
 		// Construct x and y position
-		float initX = static_cast<float>(_cWidth * startX);
+/*		float initX = static_cast<float>(_cWidth * startX);
 		float totalX = static_cast<float>(_cWidth * _numChunks) * 0.5f;
 		float xpos = (initX / totalX) - 1.0f;
 
 		float initY = static_cast<float>(_cHeight * startY);
 		float totalY = static_cast<float>(_cHeight * _numChunks) * 0.5f;
 		float ypos = (initY / totalY) - 1.0f;
-
+		*/
 		// Add to the list of completed blocks
-		addRenderData(startX, startY, pixels);
+		addRenderData(startX, startY, 0);
 	}
 
 	// Add render data
 	void SceneRenderer::addRenderData(unsigned int startX, unsigned int startY, float* renderData)
 	{
+		// First, acquire the job mutex
+		EnterCriticalSection(&_renderMutex);
+
 		// Create pointer to render data
 		RenderData* rd = new RenderData();
 		rd->_startX = startX;
 		rd->_startY = startY;
 		rd->_pixelData = renderData;
+			
+		// Enqueue and release
+		_renderQueue.push(rd);
 
-		// First, acquire the job mutex
-		bool tryEnqueue = true;
-		while(tryEnqueue == true)
-		{
-			HRESULT result = WaitForSingleObject(_renderMutex, 1000);
-			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
-			{
-				Sleep(100);
-			}
-			else
-			{
-				// Enqueue and release
-				_renderQueue.push(rd);
-
-				// Release the mutex
-				ReleaseMutex(_renderMutex);
-
-				// Exit loop
-				tryEnqueue = false;
-			}
-		}
+		// Release the mutex
+		LeaveCriticalSection(&_renderMutex);
 	} 
 
 	// Try to get a piece of render data
@@ -304,39 +288,18 @@ namespace SuperTrace
 		// The data to return
 		RenderData* data = 0;
 
-		// First, acquire the job mutex
-		bool tryDequeue = true;
-		while(tryDequeue == true)
+		// There is a valid queue entry at lock attempt time
+		EnterCriticalSection(&_renderMutex);
+		
+		// Now that we have acquired the lock, make sure we still have a valid queue entry
+		if(_renderQueue.size() > 0)
 		{
-			// First, test for valid queue entry
-			if(_renderQueue.size() == 0)
-			{
-				tryDequeue = false;
-			}
-			else
-			{
-				// There is a valid queue entry at lock attempt time
-				HRESULT result = WaitForSingleObject(_renderMutex, 1000);
-				if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
-				{
-					Sleep(10);
-				}
-				else
-				{
-					// Now that we have acquired the lock, make sure we still have a valid queue entry
-
-					if(_renderQueue.size() > 0)
-					{
-						data = _renderQueue.front();
-						_renderQueue.pop();
-						tryDequeue = false;
-					}
-
-					// Release the mutex
-					ReleaseMutex(_renderMutex);
-				}
-			}
+			data = _renderQueue.front();
+			_renderQueue.pop();
 		}
+
+		// Release the mutex
+		LeaveCriticalSection(&_renderMutex);
 
 		return data;
 	}
@@ -345,67 +308,33 @@ namespace SuperTrace
 	void SceneRenderer::addTraceableChunk(ChunkData* chunk)
 	{
 		// First, acquire the job mutex
-		bool tryEnqueue = true;
-		while(tryEnqueue == true)
-		{
-			HRESULT result = WaitForSingleObject(_jobMutex, 1000);
-			if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
-			{
-				Sleep(100);
-			}
-			else
-			{
-				// Enqueue and release
-				_chunkQueue.push(chunk);
+		EnterCriticalSection(&_jobMutex);
 
-				// Release the mutex
-				ReleaseMutex(_jobMutex);
+		// Enqueue and release
+		_chunkQueue.push(chunk);
 
-				// Exit loop
-				tryEnqueue = false;
-			}
-		}
+		// Release the mutex
+		LeaveCriticalSection(&_jobMutex);
 	}
 
 	// Dequeue a chunk
 	ChunkData* SceneRenderer::getTraceableChunk()
 	{
+
 		// The data to return
 		ChunkData* data = 0;
 
-		// First, acquire the job mutex
-		bool tryDequeue = true;
-		while(tryDequeue == true)
+		EnterCriticalSection(&_jobMutex);
+
+		// Now that we have acquired the lock, make sure we still have a valid queue entry
+		if(_chunkQueue.size() > 0)
 		{
-			// First, test for valid queue entry
-			if(_chunkQueue.size() == 0)
-			{
-				tryDequeue = false;
-			}
-			else
-			{
-				// There is a valid queue entry at lock attempt time
-				HRESULT result = WaitForSingleObject(_jobMutex, 1000);
-				if(result == WAIT_TIMEOUT || result == WAIT_FAILED)
-				{
-					Sleep(10);
-				}
-				else
-				{
-					// Now that we have acquired the lock, make sure we still have a valid queue entry
-
-					if(_chunkQueue.size() > 0)
-					{
-						data = _chunkQueue.front();
-						_chunkQueue.pop();
-						tryDequeue = false;
-					}
-
-					// Release the mutex
-					ReleaseMutex(_jobMutex);
-				}
-			}
+			data = _chunkQueue.front();
+			_chunkQueue.pop();
 		}
+
+		// Release the mutex
+		LeaveCriticalSection(&_jobMutex);
 
 		return data;
 	}
@@ -439,27 +368,6 @@ namespace SuperTrace
 	// Draw a scene
 	void SceneRenderer::drawToScreen(RenderData* data)
 	{
-		// Global position
-		unsigned int width = _cWidth * _numChunks;
-		unsigned int height = _cHeight * _numChunks;
-		for(unsigned int i = 0; i < _cHeight; ++i)
-		{
-			for(unsigned int j = 0; j < _cWidth; ++j)
-			{
-				unsigned int pos = ((i * _cWidth) + j) * 3;
-				unsigned int base = ((width * _cHeight) * data->_startY) + (width * i);
-				unsigned int offset = (data->_startX * _cWidth) + j;
-
-				// Inverse the base
-				base = (width * height) - base - width;
-
-				unsigned int p = (base + offset) * 3;
-				_pixelData[p] = data->_pixelData[pos];
-				_pixelData[p + 1] = data->_pixelData[pos + 1];
-				_pixelData[p + 2] = data->_pixelData[pos + 2];
-			}
-		}
-
 		// Tally the number of jobs we have left to handle
 		decrementJobCount();
 
@@ -476,6 +384,8 @@ namespace SuperTrace
 		// While the scene is not complete
 		while(sceneRenderer->getIsSceneComplete() == false)
 		{
+			//EnterCriticalSection(&cs);
+
 			// Get a chunk from the queue
 			ChunkData* data = sceneRenderer->getTraceableChunk();
 
@@ -486,11 +396,14 @@ namespace SuperTrace
 
 				// Delete the data
 				delete data;
+				data = 0;
 			}
 			else
 			{
 				Sleep(1000);
 			}
+
+			//LeaveCriticalSection(&cs);
 		}
 
 		return 0;
@@ -515,6 +428,7 @@ namespace SuperTrace
 			{
 				sceneRenderer->drawToScreen(data);
 				delete data;
+				data = 0;
 			}
 			else
 			{
