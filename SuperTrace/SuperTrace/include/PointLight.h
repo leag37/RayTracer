@@ -1,10 +1,11 @@
 //*************************************************************************************************
-// Light.h
+// Title: PointLight.h
 //*************************************************************************************************
-#ifndef __STLIGHT_H__
-#define __STLIGHT_H___
+#ifndef __STPOINTLIGHT_H__
+#define __STPOINTLIGHT_H___
 
-#include "Vector4.h"
+#include "Vector3.h"
+#include "Light.h"
 
 namespace SuperTrace
 {
@@ -12,15 +13,12 @@ namespace SuperTrace
 	*	@{
 	*/
 
-	class Color;
-	class Object;
-
-	class Light
+	class PointLight : public Light
 	{
 	public:
 		/** Constructor
 		*/
-		Light();
+		PointLight();
 
 		/** Constructor
 		* @param
@@ -30,28 +28,29 @@ namespace SuperTrace
 		* @param
 		*	specular Light specular property
 		*/
-		Light(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular);
+		PointLight(const Vector3& position, const Vector3& attenuation, float range,
+			const Vector4& ambient, const Vector4& diffuse, const Vector4& specular);
 
 		/** Destructor
 		*/
-		virtual ~Light();
+		~PointLight();
 
 		/** Determine the color based on the object's properties
 		*/
-		virtual Color compute(const Object* obj) = 0;
+		Color compute(const Object* obj);
 
-	protected:
-		/** Ambient properties
+	private:
+		/** Position of the light
 		*/
-		Vector4 _ambient;
+		Vector3 _position;
 
-		/** Diffuse properties
+		/** Attenuation
 		*/
-		Vector4 _diffuse;
+		Vector3 _attenuation;
 
-		/** Specular properties
+		/** Range
 		*/
-		Vector4 _specular;
+		float _range;
 	};
 
 	/** @} */

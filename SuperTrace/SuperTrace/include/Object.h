@@ -8,6 +8,7 @@
 
 #include "STMath.h"
 #include "Color.h"
+#include "Material.h"
 
 namespace SuperTrace
 {
@@ -44,6 +45,18 @@ namespace SuperTrace
 		*/
 		const Color& getColor() const;
 
+		/** Get the material
+		* @return
+		*	Material The material attached to this object
+		*/
+		const Material& getMaterial() const;
+
+		/** Set the material for this object
+		* @param
+		*	Material The new material for the object
+		*/
+		void setMaterial(const Material& material);
+
 	protected:
 		/** World matrix
 		*/
@@ -52,6 +65,10 @@ namespace SuperTrace
 		/** Object color
 		*/
 		Color _color;
+
+		/** Object material
+		*/
+		Material _material;
 	};
 
 	/** @} */

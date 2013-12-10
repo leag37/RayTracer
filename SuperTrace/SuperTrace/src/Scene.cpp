@@ -5,12 +5,14 @@
 //*************************************************************************************************
 #include "Scene.h"
 
+#include "Material.h"
 #include "Camera.h"
 #include "Color.h"
 #include "Object.h"
 #include "Ray.h"
 #include "Sphere.h"
 #include "STMath.h"
+#include "PointLight.h"
 
 namespace SuperTrace
 {
@@ -42,15 +44,22 @@ namespace SuperTrace
 		// Get the direction ray
 		Ray ray = _camera->rasterToRay(x, y);
 
-		bool intersect = false;
 		std::list<Object*>::iterator end = _objects.end();
+		// Iterate through the list of objects to see if this ray will need to return a color
 		for(std::list<Object*>::iterator itr = _objects.begin(); itr != end; ++itr)
 		{
 			Object* obj = *itr;
 			if(obj->intersect(ray) == true)
 			{
-				intersect = true;
-				color = obj->getColor();
+				// We passed the intersection test for this object, now we need to locate a light source to determine the color
+				
+				// For now, just iterate through lights and cast shadow rays
+				std::list<Light*>::iterator lEnd = _lights.end();
+				for(std::list<Light*>::iterator lItr = _lights.begin(); lItr != lEnd; ++lItr)
+				{
+					Light* light = *lItr;
+					color = light->compute(obj);
+				}
 			}
 		}
 		return color;
@@ -68,7 +77,9 @@ namespace SuperTrace
 	*/
 	void Scene::createLights()
 	{
-	
+		PointLight* pl = new PointLight(Vector3(), Vector3(0.0f, 0.1f, 0.0f), 100.0f, 
+			Vector4(0.5f, 0.5f, 0.5f, 1.0f), Vector4(), Vector4());
+		_lights.push_back(pl);
 	}
 
 	/** Add objects to the scene
@@ -79,10 +90,22 @@ namespace SuperTrace
 		Matrix44 i;
 		i.setIdentity();
 		
-		_objects.push_back(new Sphere(i, Vector3(0.0f, 0.0f, -10.0f), 2.5f));
-		_objects.push_back(new Sphere(i, Vector3(4.0f, 0.0f, -12.0f), 1.5f));
-		_objects.push_back(new Sphere(i, Vector3(-4.0f, 2.0f, -10.0f), 2.0f));
-		_objects.push_back(new Sphere(i, Vector3(0.0f, 6.0f, -10.0f), 3.0f));
+		Material m = Material(Vector4(0.5f, 0.5f, 0.5f, 1.0f), Vector4(), Vector4());
+		Sphere* s = new Sphere(i, Vector3(0.0f, 0.0f, -10.0f), 2.5f);
+		s->setMaterial(m);
+		_objects.push_back(s);
+
+		s = new Sphere(i, Vector3(4.0f, 0.0f, -12.0f), 1.5f);
+		s->setMaterial(m);
+		_objects.push_back(s);
+
+		s = new Sphere(i, Vector3(-4.0f, 2.0f, -10.0f), 2.0f);
+		s->setMaterial(m);
+		_objects.push_back(s);
+
+		s = new Sphere(i, Vector3(0.0f, 6.0f, -10.0f), 3.0f);
+		s->setMaterial(m);
+		_objects.push_back(s);
 	}
 
 }	// Namespace

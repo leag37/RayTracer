@@ -76,6 +76,7 @@ namespace SuperTrace
 		{
 			ray.setTMax(tMax);
 		}
+		return true;
 	}
 
 }	// Namespace

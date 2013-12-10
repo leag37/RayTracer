@@ -36,4 +36,22 @@ namespace SuperTrace
 		return _color;
 	}
 
+	/** Get the material
+	* @return
+	*	Material The material attached to this object
+	*/
+	const Material& Object::getMaterial() const
+	{
+		return _material;
+	}
+
+	/** Set the material for this object
+	* @param
+	*	Material The new material for the object
+	*/
+	void Object::setMaterial(const Material& material)
+	{
+		_material = material;
+	}
+
 }	// Namespace
