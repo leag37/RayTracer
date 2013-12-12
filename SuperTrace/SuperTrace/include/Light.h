@@ -14,6 +14,7 @@ namespace SuperTrace
 
 	class Color;
 	class Object;
+	class Ray;
 
 	class Light
 	{
@@ -38,7 +39,7 @@ namespace SuperTrace
 
 		/** Determine the color based on the object's properties
 		*/
-		virtual Color compute(const Object* obj) = 0;
+		virtual Color compute(const Object* obj, const Ray& ray) = 0;
 
 	protected:
 		/** Ambient properties

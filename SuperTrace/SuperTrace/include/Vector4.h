@@ -95,6 +95,14 @@ namespace SuperTrace
 		* @return
 		*	Vector4 The scaled vector
 		*/
+		Vector4 operator*(const Vector4& scale) const;
+
+		/** Scale operator
+		* @param
+		*	scale The value by which to scale
+		* @return
+		*	Vector4 The scaled vector
+		*/
 		Vector4 operator*(float scale) const;
 
 		/** Scale operator

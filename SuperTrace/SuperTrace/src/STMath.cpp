@@ -102,4 +102,28 @@ namespace SuperTrace
 		return true;
 	}
 
+	/** Generate a random number
+	* @return
+	*	float A random number from 0 - 1
+	*/
+	float Randf()
+	{
+		return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	}
+
+	/** Generate a random number
+	* @param
+	*	min The min value
+	* @param
+	*	max The max value
+	* @return
+	*	float A randon number from min - max
+	*/
+	float Randf(float min, float max)
+	{
+		float r = Randf();
+
+		return (r * (max - min)) + min;
+	}
+
 }	// Namespace

@@ -71,6 +71,12 @@ namespace SuperTrace
 		*/
 		Vector3& operator+=(const Vector3& v);
 
+		/** Negate the vector
+		* @return
+		*	Vector3 The negated vector
+		*/
+		Vector3 operator-() const;
+
 		/** Subtraction operator
 		* @param
 		*   vec The vector to subtract

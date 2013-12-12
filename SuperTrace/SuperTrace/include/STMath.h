@@ -43,6 +43,22 @@ namespace SuperTrace
 	*	bool If at least one root is found
 	*/
 	bool SolveQuadratic(float a, float b, float c, float& x0, float& x1);
+
+	/** Generate a random number
+	* @return
+	*	float A random number from 0 - 1
+	*/
+	float Randf();
+
+	/** Generate a random number
+	* @param
+	*	min The min value
+	* @param
+	*	max The max value
+	* @return
+	*	float A randon number from min - max
+	*/
+	float Randf(float min, float max);
 	
 }	// Namespace
 

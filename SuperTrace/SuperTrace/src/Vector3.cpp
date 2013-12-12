@@ -105,6 +105,15 @@ namespace SuperTrace
 		return *this;
 	}
 
+	/** Negate the vector
+	* @return
+	*	Vector3 The negated vector
+	*/
+	Vector3 Vector3::operator-() const
+	{
+		return Vector3(-_x, -_y, -_z);
+	}
+
 	/** Subtraction operator
 	* @param
 	*   vec The vector to subtract

@@ -17,6 +17,7 @@ namespace SuperTrace
 	*/
 
 	class Ray;
+	class Vector3;
 
 	class Object
 	{
@@ -56,6 +57,14 @@ namespace SuperTrace
 		*	Material The new material for the object
 		*/
 		void setMaterial(const Material& material);
+
+		/** Calculate the surface normal for a given contact point
+		* @param
+		*	surfacePoint The surface point at which to construct a normal
+		* @return
+		*	Vector3 A vector representing a surface normal
+		*/
+		virtual Vector3 getSurfaceNormal(const Vector3& surfacePoint) const = 0;
 
 	protected:
 		/** World matrix

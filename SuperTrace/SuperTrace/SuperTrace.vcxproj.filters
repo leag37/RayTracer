@@ -122,5 +122,8 @@
     <ClInclude Include="include\PointLight.h">
       <Filter>Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="include\DirectionalLight.h">
+      <Filter>Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

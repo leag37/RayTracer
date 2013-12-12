@@ -22,6 +22,14 @@ namespace SuperTrace
 
 		bool intersect(const Ray& ray) const;
 
+		/** Calculate the surface normal for a given contact point
+		* @param
+		*	surfacePoint The surface point at which to construct a normal
+		* @return
+		*	Vector3 A vector representing a surface normal
+		*/
+		Vector3 getSurfaceNormal(const Vector3& surfacePoint) const;
+
 	private:
 		Vector3 _center;
 

@@ -33,6 +33,7 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ChunkData.h" />
     <ClInclude Include="include\Color.h" />
+    <ClInclude Include="include\DirectionalLight.h" />
     <ClInclude Include="include\Light.h" />
     <ClInclude Include="include\Material.h" />
     <ClInclude Include="include\Matrix44.h" />

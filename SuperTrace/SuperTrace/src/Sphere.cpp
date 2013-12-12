@@ -73,4 +73,17 @@ namespace SuperTrace
 		return true;
 	}
 
+	/** Calculate the surface normal for a given contact point
+	* @param
+	*	surfacePoint The surface point at which to construct a normal
+	* @return
+	*	Vector3 A vector representing a surface normal
+	*/
+	Vector3 Sphere::getSurfaceNormal(const Vector3& surfacePoint) const
+	{
+		Vector3 normal = surfacePoint - _center;
+		normal.normalize();
+		return normal;
+	}
+
 }	// Namespace

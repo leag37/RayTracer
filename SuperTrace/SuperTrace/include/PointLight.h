@@ -37,7 +37,7 @@ namespace SuperTrace
 
 		/** Determine the color based on the object's properties
 		*/
-		Color compute(const Object* obj);
+		Color compute(const Object* obj, const Ray& ray);
 
 	private:
 		/** Position of the light
